@@ -1,5 +1,439 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><title>KS Tech</title></head>
-<body><p>Coming soon.</p></body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fetch — Multi Downloader</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --card: #ffffff;
+    --text: #111111;
+    --muted: #888;
+    --accent-ig: #e1306c;
+    --accent-yt: #ff0000;
+    --accent: #111;
+    --border: #e0ddd8;
+    --slot-bg: #fafaf8;
+    --radius: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 16px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeDown 0.5s ease both;
+  }
+  header h1 {
+    font-family: var(--font-head);
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  header p {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Platform Toggle ── */
+  .toggle-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+    animation: fadeDown 0.5s 0.1s ease both;
+  }
+  .platform-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted);
+  }
+  .platform-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .platform-btn.active-ig {
+    border-color: var(--accent-ig);
+    color: var(--accent-ig);
+    background: #fff0f5;
+  }
+  .platform-btn.active-yt {
+    border-color: var(--accent-yt);
+    color: var(--accent-yt);
+    background: #fff5f5;
+  }
+  .platform-btn:hover { transform: translateY(-1px); }
+
+  /* ── Main Card ── */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 560px;
+    animation: fadeUp 0.5s 0.15s ease both;
+  }
+
+  .slots-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── URL Slots ── */
+  .slots { display: flex; flex-direction: column; gap: 10px; }
+
+  .slot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--slot-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .slot:focus-within {
+    border-color: #bbb;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+  }
+  .slot-num {
+    font-size: 0.7rem;
+    color: #ccc;
+    font-weight: 500;
+    min-width: 16px;
+    text-align: center;
+  }
+  .slot input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text);
+    outline: none;
+  }
+  .slot input::placeholder { color: #ccc; }
+  .slot .clear-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.15s;
+  }
+  .slot .clear-btn:hover { color: #999; }
+
+  /* ── Quality selector (YouTube only) ── */
+  .quality-row {
+    margin-top: 18px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .quality-row.visible { display: flex; }
+  .quality-row label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .quality-row select {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: var(--slot-bg);
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* ── Actions ── */
+  .actions {
+    margin-top: 22px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-main {
+    flex: 1;
+    min-width: 160px;
+    padding: 13px 20px;
+    border-radius: 10px;
+    border: none;
+    background: var(--text);
+    color: #fff;
+    font-family: var(--font-head);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: -0.3px;
+    transition: transform 0.15s, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-main:hover { transform: translateY(-2px); }
+  .btn-main:active { transform: translateY(0); }
+  .btn-main.ig-active { background: var(--accent-ig); }
+  .btn-main.yt-active { background: var(--accent-yt); }
+
+  .btn-clear-all {
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-clear-all:hover { border-color: #bbb; color: var(--text); }
+
+  /* ── Status log ── */
+  .log {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .log-item {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+    animation: fadeUp 0.25s ease both;
+  }
+  .log-item.pending { background: #f5f4f0; border-color: #ccc; color: var(--muted); }
+  .log-item.opening { background: #f0fff8; border-color: #3ecf8e; color: #1a7a50; }
+  .log-item.error   { background: #fff5f5; border-color: #ff6b6b; color: #c0392b; }
+
+  /* ── Footer note ── */
+  .note {
+    margin-top: 18px;
+    font-size: 0.7rem;
+    color: #bbb;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 400px;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 400px) {
+    .card { padding: 22px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>fetch.</h1>
+  <p>Multi-URL Video Downloader &nbsp;·&nbsp; Personal Use</p>
+</header>
+
+<!-- Platform Toggle -->
+<div class="toggle-row">
+  <button class="platform-btn active-ig" id="btn-ig" onclick="setPlatform('ig')">
+    <!-- Instagram icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </svg>
+    Instagram
+  </button>
+  <button class="platform-btn" id="btn-yt" onclick="setPlatform('yt')">
+    <!-- YouTube icon -->
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.1c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.2 21.6 12 21.6 12 21.6s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.3l8.1 3.6-8.1 3.6z"/>
+    </svg>
+    YouTube
+  </button>
+</div>
+
+<!-- Card -->
+<div class="card">
+  <div class="slots-label">Paste up to 10 URLs</div>
+
+  <div class="slots" id="slots">
+    <!-- slots generated by JS -->
+  </div>
+
+  <!-- Quality (YouTube only) -->
+  <div class="quality-row" id="quality-row">
+    <label>Quality</label>
+    <select id="quality-select">
+      <option value="">Best available</option>
+      <option value="1080">1080p</option>
+      <option value="720">720p</option>
+      <option value="480">480p</option>
+    </select>
+  </div>
+
+  <div class="actions">
+    <button class="btn-main ig-active" id="download-btn" onclick="downloadAll()">
+      ↓ &nbsp;Download All
+    </button>
+    <button class="btn-clear-all" onclick="clearAll()">Clear</button>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<p class="note">
+  Opens cobalt.tools for each URL — best free downloader, no watermark, no login.<br/>
+  Allow popups for this page in your browser settings.
+</p>
+
+<script>
+  let platform = 'ig';
+  const SLOT_COUNT = 10;
+
+  // Build slots
+  const slotsEl = document.getElementById('slots');
+  for (let i = 1; i <= SLOT_COUNT; i++) {
+    slotsEl.innerHTML += `
+      <div class="slot" id="slot-${i}">
+        <span class="slot-num">${i}</span>
+        <input type="url" id="url-${i}" placeholder="Paste URL here…" />
+        <button class="clear-btn" onclick="clearSlot(${i})" title="Clear">✕</button>
+      </div>`;
+  }
+
+  function setPlatform(p) {
+    platform = p;
+    document.getElementById('btn-ig').className = 'platform-btn' + (p === 'ig' ? ' active-ig' : '');
+    document.getElementById('btn-yt').className = 'platform-btn' + (p === 'yt' ? ' active-yt' : '');
+    const btn = document.getElementById('download-btn');
+    btn.className = 'btn-main ' + (p === 'ig' ? 'ig-active' : 'yt-active');
+    document.getElementById('quality-row').className = 'quality-row' + (p === 'yt' ? ' visible' : '');
+
+    // Update placeholders
+    const ph = p === 'ig'
+      ? 'https://www.instagram.com/reel/…'
+      : 'https://www.youtube.com/watch?v=…';
+    for (let i = 1; i <= SLOT_COUNT; i++) {
+      document.getElementById('url-' + i).placeholder = ph;
+    }
+  }
+
+  function clearSlot(i) {
+    document.getElementById('url-' + i).value = '';
+  }
+
+  function clearAll() {
+    for (let i = 1; i <= SLOT_COUNT; i++) clearSlot(i);
+    document.getElementById('log').innerHTML = '';
+  }
+
+  function buildCobaltUrl(rawUrl) {
+    // cobalt.tools accepts a URL param directly
+    const encoded = encodeURIComponent(rawUrl.trim());
+    return `https://cobalt.tools/?u=${encoded}`;
+  }
+
+  function log(msg, type = 'pending') {
+    const logEl = document.getElementById('log');
+    const div = document.createElement('div');
+    div.className = 'log-item ' + type;
+    div.textContent = msg;
+    logEl.appendChild(div);
+  }
+
+  function downloadAll() {
+    const logEl = document.getElementById('log');
+    logEl.innerHTML = '';
+
+    const urls = [];
+    for (let i = 1; i <= SLOT_COUNT; i++) {
+      const val = document.getElementById('url-' + i).value.trim();
+      if (val) urls.push({ index: i, url: val });
+    }
+
+    if (urls.length === 0) {
+      log('⚠  No URLs entered. Paste at least one URL above.', 'error');
+      return;
+    }
+
+    // Validate loosely
+    const validUrls = [];
+    for (const { index, url } of urls) {
+      const isIG = url.includes('instagram.com');
+      const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+      if (platform === 'ig' && !isIG) {
+        log(`Slot ${index}: Doesn't look like an Instagram URL — skipped.`, 'error');
+        continue;
+      }
+      if (platform === 'yt' && !isYT) {
+        log(`Slot ${index}: Doesn't look like a YouTube URL — skipped.`, 'error');
+        continue;
+      }
+      validUrls.push({ index, url });
+    }
+
+    if (validUrls.length === 0) return;
+
+    log(`Opening ${validUrls.length} download tab${validUrls.length > 1 ? 's' : ''}…`, 'opening');
+
+    // Open with small delay between each to avoid popup blocker
+    validUrls.forEach(({ index, url }, i) => {
+      setTimeout(() => {
+        const cobaltUrl = buildCobaltUrl(url);
+        const w = window.open(cobaltUrl, '_blank');
+        if (!w) {
+          log(`Slot ${index}: Popup blocked. Allow popups for this page.`, 'error');
+        } else {
+          log(`Slot ${index}: ✓ Opened in new tab`, 'opening');
+        }
+      }, i * 600);
+    });
+  }
+
+  // Init
+  setPlatform('ig');
+</script>
+</body>
 </html>
