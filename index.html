@@ -2,1260 +2,517 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>KRONOS — by KS Tech</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora OS</title>
 <style>
-:root {
-  --bg: #080810;
-  --surface: #0e0e1a;
-  --card: #13131f;
-  --border: rgba(255,255,255,0.07);
-  --accent: #c8a84b;
-  --accent2: #e63946;
-  --cyan: #00d4ff;
-  --green: #39ff14;
-  --text: #e8e0d0;
-  --muted: #6b6880;
-  --glow: 0 0 20px rgba(200,168,75,0.3);
+:root{
+  --accent:#0a84ff;
+  --text:#f5f5f7; --dim:rgba(245,245,247,.55);
+  --glass:rgba(40,40,45,.62); --glass2:rgba(255,255,255,.07); --side:rgba(255,255,255,.04);
+  --line:rgba(255,255,255,.1); --win:rgba(34,34,38,.8);
+  --ring:0 0 0 .5px rgba(0,0,0,.6); --shadow:0 28px 80px rgba(0,0,0,.5);
+  --lights:rgba(255,255,255,.2);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+body.light{
+  --text:#1d1d1f; --dim:rgba(29,29,31,.55);
+  --glass:rgba(246,246,249,.68); --glass2:rgba(0,0,0,.05); --side:rgba(0,0,0,.03);
+  --line:rgba(0,0,0,.1); --win:rgba(250,250,252,.84);
+  --ring:0 0 0 .5px rgba(0,0,0,.25); --shadow:0 28px 80px rgba(20,30,60,.28);
+  --lights:rgba(0,0,0,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font:13px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;letter-spacing:-.01em;color:var(--text);user-select:none;-webkit-font-smoothing:antialiased}
+button{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;cursor:default}
+input,textarea{font:inherit;letter-spacing:inherit;color:inherit;outline:none}
+svg{display:block;flex:none}
+.blur{backdrop-filter:blur(40px) saturate(1.8);-webkit-backdrop-filter:blur(40px) saturate(1.8)}
+.dim{color:var(--dim)}
 
-/* ── BOOT SCREEN ── */
-#boot{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
-#boot-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,15vw,7rem);color:var(--accent);letter-spacing:0.15em;text-shadow:0 0 40px rgba(200,168,75,0.6),0 0 80px rgba(200,168,75,0.2);animation:boot-pulse 1.5s ease infinite alternate;}
-@keyframes boot-pulse{from{opacity:0.6}to{opacity:1}}
-#boot-sub{font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.4em;color:var(--muted);text-transform:uppercase;}
-#boot-bar-wrap{width:200px;height:2px;background:rgba(255,255,255,0.1);margin-top:20px;}
-#boot-bar{height:2px;background:var(--accent);width:0%;transition:width 0.05s linear;}
-#boot-msg{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.2em;min-height:14px;}
+/* wallpaper */
+#wall{position:fixed;inset:0;background-size:cover;transition:background .8s}
+.wp0{background:radial-gradient(120% 80% at 12% 0,#3b4290 0,transparent 55%),radial-gradient(90% 70% at 100% 15%,#6e3f86 0,transparent 55%),radial-gradient(130% 70% at 50% 125%,#d0714e 0,transparent 62%),linear-gradient(#0e1126,#191430)}
+.wp1{background:radial-gradient(100% 80% at 20% 0,#fff 0,transparent 60%),radial-gradient(100% 90% at 95% 100%,#9dc3ff 0,transparent 60%),linear-gradient(#dde7f7,#c3d4ef)}
+.wp2{background:radial-gradient(100% 80% at 30% 0,#50535e 0,transparent 60%),radial-gradient(90% 70% at 95% 100%,#2d3242 0,transparent 60%),#16171b}
+.wp3{background:radial-gradient(110% 80% at 85% 0,#df8a4e 0,transparent 55%),radial-gradient(100% 80% at 0 100%,#7b2b4b 0,transparent 60%),linear-gradient(#2a1226,#4a1e33)}
+#dimmer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:99990}
 
-/* ── LAYOUT ── */
-#app{display:none;flex-direction:column;min-height:100vh;}
-#app.show{display:flex;}
+/* menu bar */
+#bar{position:fixed;top:0;left:0;right:0;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;z-index:9000;background:var(--glass);border-bottom:.5px solid var(--line);font-weight:500}
+#bar .g{display:flex;align-items:center;gap:1px}
+.mi{padding:2px 9px;border-radius:5px;display:flex;align-items:center;gap:6px;height:22px}
+.mi:hover,.mi.on{background:var(--glass2)}
+.mi.b{font-weight:700}
+#menu{position:fixed;top:30px;min-width:230px;padding:5px;border-radius:10px;background:var(--glass);border:.5px solid var(--line);box-shadow:var(--shadow),var(--ring);z-index:9800;display:none}
+#menu button{display:flex;justify-content:space-between;gap:24px;width:100%;padding:4px 10px;border-radius:5px;text-align:left}
+#menu button:hover:not(:disabled){background:var(--accent);color:#fff}
+#menu button:disabled{opacity:.4}
+#menu hr{border:0;border-top:.5px solid var(--line);margin:5px 8px}
+#menu .k{opacity:.55}
 
-/* ── TOP BAR ── */
-#topbar{position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
-#topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.2em;color:var(--accent);text-shadow:0 0 15px rgba(200,168,75,0.4);}
-#topbar-sub{font-size:0.55rem;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;line-height:1;margin-top:1px;}
-#topbar-time{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--muted);text-align:right;}
+/* widgets */
+#widgets{position:fixed;top:44px;right:16px;width:232px;display:flex;flex-direction:column;gap:12px;z-index:1}
+.card{background:var(--glass);border:.5px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.cal h5{font-size:12px;font-weight:600;color:#ff453a;margin-bottom:8px}
+.cal .gr{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;row-gap:3px}
+.cal .gr span{height:22px;display:grid;place-items:center;border-radius:50%}
+.cal .gr .h{color:var(--dim);font-weight:600}
+.cal .gr .t{background:#ff453a;color:#fff;font-weight:600}
+.wx{display:flex;justify-content:space-between;align-items:center}
+.wx b{font-size:34px;font-weight:300;letter-spacing:-.03em}
 
-/* ── NAV ── */
-#nav{display:flex;overflow-x:auto;gap:4px;padding:12px 12px 0;scrollbar-width:none;border-bottom:1px solid var(--border);}
-#nav::-webkit-scrollbar{display:none;}
-.nav-tab{flex-shrink:0;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;padding:8px 14px 10px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
-.nav-tab:hover{color:var(--text);}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+/* dock */
+#dockwrap{position:fixed;bottom:8px;left:0;right:0;display:flex;justify-content:center;z-index:9000;pointer-events:none}
+#dock{pointer-events:auto;display:flex;align-items:flex-end;gap:8px;padding:7px 8px;border-radius:24px;background:var(--glass);border:.5px solid var(--line);box-shadow:var(--shadow),var(--ring)}
+.dk{position:relative;width:50px;height:50px;border-radius:22.5%;display:grid;place-items:center;color:#fff;transition:width .18s,height .18s;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22),inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.25)}
+.dk svg{width:54%;height:54%}
+#dock.hov .dk{transition:none}
+.dk::after{content:attr(data-n);position:absolute;top:-38px;left:50%;transform:translateX(-50%);background:var(--glass);backdrop-filter:blur(30px);border:.5px solid var(--line);padding:3px 10px;border-radius:7px;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s}
+.dk:hover::after{opacity:1}
+.dk.run::before{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-2px;width:4px;height:4px;border-radius:50%;background:var(--text);opacity:.8}
 
-/* ── PAGES ── */
-.page{display:none;padding:20px 16px 80px;max-width:640px;margin:0 auto;width:100%;}
-.page.active{display:block;}
+/* windows */
+.win{position:fixed;display:flex;flex-direction:column;background:var(--win);border-radius:12px;overflow:hidden;min-width:300px;min-height:220px;resize:both;box-shadow:var(--ring),0 10px 30px rgba(0,0,0,.25);animation:pop .2s cubic-bezier(.2,.9,.3,1)}
+.win.active{box-shadow:var(--ring),var(--shadow),inset 0 0 0 .5px var(--line)}
+@keyframes pop{from{opacity:0;transform:scale(.965)}}
+.win.max{inset:28px 0 0 0!important;width:auto!important;height:auto!important;border-radius:0;resize:none}
+.win.min{display:none}
+.tb{position:relative;height:38px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--dim)}
+.win.active .tb{color:var(--text)}
+.lights{position:absolute;left:13px;display:flex;gap:8px}
+.lights i{width:12px;height:12px;border-radius:50%;background:var(--lights);display:grid;place-items:center;color:rgba(0,0,0,.6)}
+.win.active .lights i:nth-child(1){background:#ff5f57}.win.active .lights i:nth-child(2){background:#febc2e}.win.active .lights i:nth-child(3){background:#28c840}
+.lights svg{width:8px;height:8px;opacity:0}.lights:hover svg{opacity:1}
+.body{flex:1;overflow:auto;position:relative;min-height:0}
+.split{display:flex;height:100%}
+.side{width:168px;flex:none;padding:8px;background:var(--side);border-right:.5px solid var(--line);overflow:auto}
+.side h6{font-size:11px;font-weight:600;color:var(--dim);padding:8px 10px 4px}
+.side button{display:flex;align-items:center;gap:9px;width:100%;padding:6px 10px;border-radius:7px;text-align:left}
+.side button svg{color:var(--accent)}
+.side button:hover{background:var(--glass2)}
+.side button.on{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.tool{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:.5px solid var(--line);font-weight:600}
+.tool .sp{flex:1}
+.ibtn{width:26px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--dim)}.ibtn:hover{background:var(--glass2);color:var(--text)}
 
-/* ── COMMON ── */
-.page-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.1em;color:var(--accent);margin-bottom:4px;}
-.page-desc{font-size:0.8rem;color:var(--muted);letter-spacing:0.05em;margin-bottom:24px;}
-.card{background:var(--card);border:1px solid var(--border);padding:18px;margin-bottom:14px;position:relative;}
-.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent);}
-.label{font-size:0.58rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.15em;text-transform:uppercase;padding:11px 22px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:all 0.15s;}
-.btn:hover,.btn:active{background:var(--accent);color:var(--bg);}
-.btn-red{border-color:var(--accent2);color:var(--accent2);}
-.btn-red:hover{background:var(--accent2);color:#fff;}
-.btn-cyan{border-color:var(--cyan);color:var(--cyan);}
-.btn-cyan:hover{background:var(--cyan);color:var(--bg);}
-.btn-full{width:100%;display:block;text-align:center;}
-.divider{height:1px;background:var(--border);margin:16px 0;}
-.tag{display:inline-block;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--border);color:var(--muted);margin:2px;}
-.big-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--accent);line-height:1;}
-.result-box{background:rgba(200,168,75,0.06);border:1px solid rgba(200,168,75,0.2);padding:16px;margin:14px 0;font-size:0.9rem;line-height:1.7;}
-select,input[type=text],input[type=number],textarea{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.85rem;padding:10px 12px;width:100%;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;}
-select:focus,input:focus,textarea:focus{border-color:var(--accent);}
-textarea{resize:none;height:80px;}
+/* files */
+.grid{flex:1;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,92px);gap:6px;align-content:start;overflow:auto}
+.fi{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 4px;border-radius:8px;font-size:12px;text-align:center}
+.fi.sel .lb{background:var(--accent);color:#fff}.fi.sel .ico{background:var(--glass2);border-radius:8px}
+.lb{padding:1px 6px;border-radius:5px;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ico{width:60px;height:52px;display:grid;place-items:center}
+.doc{width:38px;height:48px;border-radius:5px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;font-size:8px;font-weight:700;color:#6b7280;letter-spacing:.04em}
+.status{padding:5px 12px;border-top:.5px solid var(--line);font-size:11px;color:var(--dim);text-align:center}
 
-/* ── HOME ── */
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.home-card{background:var(--card);border:1px solid var(--border);padding:18px 14px;cursor:pointer;transition:all 0.15s;text-align:center;}
-.home-card:hover,.home-card:active{border-color:var(--accent);background:rgba(200,168,75,0.05);}
-.home-icon{font-size:1.8rem;margin-bottom:8px;}
-.home-card-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;color:var(--text);}
-.home-card-sub{font-size:0.62rem;color:var(--muted);letter-spacing:0.05em;margin-top:2px;}
-.home-hero{background:linear-gradient(135deg,rgba(200,168,75,0.08),rgba(230,57,70,0.05));border:1px solid rgba(200,168,75,0.2);padding:24px 20px;margin-bottom:20px;text-align:center;}
-.home-hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,10vw,3.5rem);letter-spacing:0.15em;color:var(--accent);text-shadow:var(--glow);}
-.home-hero-sub{font-size:0.7rem;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;margin-top:4px;}
-.streak-bar{display:flex;justify-content:space-around;background:var(--surface);border:1px solid var(--border);padding:12px;margin-bottom:20px;}
-.streak-item{text-align:center;}
-.streak-val{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);}
-.streak-key{font-size:0.55rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
+/* notes */
+.nl{width:210px;flex:none;border-right:.5px solid var(--line);background:var(--side);display:flex;flex-direction:column}
+.nl .list{flex:1;overflow:auto;padding:6px}
+.ni{display:block;width:100%;text-align:left;padding:9px 11px;border-radius:8px}
+.ni.on{background:#f5b82e;color:#111}.ni.on .dim{color:rgba(0,0,0,.6)}
+.ni b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ni .dim{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+textarea.ed{flex:1;width:100%;padding:20px 24px;background:transparent;border:0;resize:none;font-size:15px;line-height:1.65;user-select:text}
 
-/* ── MYSTERY ── */
-.story-text{font-size:0.92rem;line-height:1.9;color:var(--text);margin-bottom:20px;min-height:60px;}
-.story-text em{color:var(--accent);font-style:normal;}
-.choice-btn{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--border);border-left:3px solid var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.85rem;color:var(--text);padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:all 0.15s;letter-spacing:0.05em;}
-.choice-btn:hover,.choice-btn:active{border-left-color:var(--accent);color:var(--accent);background:rgba(200,168,75,0.04);}
-.clue-badge{display:inline-block;background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);color:var(--accent);font-size:0.65rem;letter-spacing:0.15em;padding:3px 10px;margin:3px 3px 3px 0;text-transform:uppercase;}
-.mystery-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
-.chapter-tag{font-size:0.6rem;letter-spacing:0.3em;color:var(--accent2);text-transform:uppercase;}
-.progress-dots{display:flex;gap:4px;}
-.pdot{width:8px;height:8px;border-radius:50%;background:var(--border);}
-.pdot.done{background:var(--accent);}
-.pdot.cur{background:var(--accent2);}
+/* calculator */
+.calc{background:#1c1c1e;color:#fff;height:100%;display:flex;flex-direction:column;padding:0 10px 10px}
+.calc .d{flex:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 10px 8px;font-size:56px;font-weight:300;letter-spacing:-.03em;min-height:80px;white-space:nowrap;overflow:hidden}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;height:74%}
+.keys button{border-radius:999px;background:#505055;font-size:22px;transition:filter .1s}
+.keys button:active{filter:brightness(1.5)}
+.keys .f{background:#3a3a3e}.keys .o{background:#ff9f0a}.keys .z{grid-column:span 2;text-align:left;padding-left:26px;border-radius:999px}
 
-/* ── PUZZLE ── */
-.puzzle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0;}
-.puzzle-cell{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--text);cursor:pointer;transition:all 0.15s;user-select:none;}
-.puzzle-cell:hover{border-color:var(--accent);}
-.puzzle-cell.selected{background:rgba(200,168,75,0.15);border-color:var(--accent);color:var(--accent);}
-.puzzle-cell.correct{background:rgba(57,255,20,0.1);border-color:var(--green);color:var(--green);}
-.puzzle-cell.wrong{background:rgba(230,57,70,0.1);border-color:var(--accent2);color:var(--accent2);}
-.diff-row{display:flex;gap:8px;margin-bottom:16px;}
-.diff-btn{flex:1;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;padding:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.diff-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,168,75,0.06);}
+/* browser */
+.addr{display:flex;align-items:center;gap:6px;padding:0 12px 8px}
+.addr .pill{flex:1;max-width:420px;margin:0 auto;background:var(--glass2);border-radius:8px;height:28px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--dim);font-size:12.5px}
+.bstart{padding:56px 24px;text-align:center}
+.bstart h2{font-size:26px;font-weight:600;letter-spacing:-.03em;margin-bottom:6px}
+.fav{display:grid;grid-template-columns:repeat(4,72px);gap:22px 20px;justify-content:center;margin-top:36px}
+.fav button{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11.5px;color:var(--dim)}
+.fav i{width:60px;height:60px;border-radius:15px;display:grid;place-items:center;font-style:normal;font-size:22px;font-weight:600;color:#fff}
 
-/* ── ROAST ── */
-.roast-output{font-size:1rem;line-height:1.8;font-style:italic;color:var(--text);padding:16px;border-left:3px solid var(--accent2);background:rgba(230,57,70,0.04);margin:14px 0;}
-.roast-verdict{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;color:var(--accent2);margin-top:8px;}
+/* music */
+.music{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px}
+.art{width:190px;height:190px;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.4);transition:background .5s}
+.mt{text-align:center}.mt b{display:block;font-size:17px;font-weight:600}
+.bar{width:80%;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar .tr{flex:1;height:4px;border-radius:2px;background:var(--glass2);overflow:hidden}.bar .tr div{height:100%;width:0;background:var(--text);opacity:.85}
+.ctl{display:flex;gap:22px;align-items:center}
+.ctl button{color:var(--text)}.ctl .pp svg{width:34px;height:34px}
 
-/* ── SCIENCE ── */
-.fact-category{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-.cat-btn{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.cat-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,0.05);}
-.fact-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.05em;color:var(--accent);margin-bottom:8px;}
-.fact-body{font-size:0.88rem;line-height:1.8;color:var(--text);}
-.fact-deep{font-size:0.78rem;line-height:1.7;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-.wow-meter{display:flex;align-items:center;gap:8px;margin-top:12px;}
-.wow-label{font-size:0.6rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
-.wow-bar{flex:1;height:4px;background:var(--border);position:relative;}
-.wow-fill{height:4px;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width 0.6s ease;}
+/* photos */
+.ph{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.ph button{aspect-ratio:1}
+.ph button:hover{filter:brightness(1.15)}
+.view{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;flex-direction:column;color:#fff}
+.view .top{display:flex;justify-content:space-between;padding:10px 14px}
+.view .top button{padding:4px 12px;border-radius:7px;background:rgba(255,255,255,.14)}
+.view .im{flex:1;margin:0 24px 24px;border-radius:10px}
 
-/* ── COINS ── */
-.coin-form{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.coin-entry{background:var(--card);border:1px solid var(--border);padding:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.coin-info{flex:1;}
-.coin-name{font-weight:700;font-size:0.9rem;color:var(--text);}
-.coin-meta{font-size:0.68rem;color:var(--muted);margin-top:2px;}
-.coin-rarity{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;padding:3px 10px;border:1px solid;}
-.rarity-common{color:var(--muted);border-color:var(--muted);}
-.rarity-uncommon{color:#4fc3f7;border-color:#4fc3f7;}
-.rarity-rare{color:var(--accent);border-color:var(--accent);}
-.rarity-legendary{color:var(--accent2);border-color:var(--accent2);}
-.del-btn{background:none;border:none;color:var(--accent2);font-size:1rem;cursor:pointer;padding:2px 6px;}
-.coin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
-.cstat{background:var(--surface);border:1px solid var(--border);padding:12px;text-align:center;}
-.cstat-val{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--accent);}
-.cstat-key{font-size:0.55rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
-.info-card{background:rgba(200,168,75,0.04);border:1px solid rgba(200,168,75,0.15);padding:14px;margin-bottom:10px;}
-.info-year{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);}
-.info-desc{font-size:0.78rem;color:var(--muted);line-height:1.6;margin-top:4px;}
+/* terminal */
+.term{background:rgba(18,18,20,.94);color:#e8e8ea;height:100%;padding:12px 14px;font:12.5px/1.55 ui-monospace,"SF Mono",Menlo,Consolas,monospace;overflow:auto;user-select:text}
+.term input{background:none;border:0;color:#fff;width:60%;font:inherit}
+.term .p{color:#7fd6a0}
 
-/* ── RIDDLE ── */
-.riddle-q{font-size:1.05rem;line-height:1.8;color:var(--text);margin-bottom:20px;padding:16px;border-left:3px solid var(--accent);}
-.riddle-hint{font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:16px;display:none;}
-.riddle-hint.show{display:block;}
-.answer-reveal{background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.2);padding:14px;display:none;}
-.answer-reveal.show{display:block;}
-.answer-text{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.08em;color:var(--green);}
+/* settings */
+.pane{flex:1;padding:22px 26px;overflow:auto}
+.pane h3{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:18px}
+.pane h4{font-size:12px;font-weight:600;color:var(--dim);margin:20px 0 8px}
+.thm{display:inline-flex;flex-direction:column;align-items:center;gap:8px;margin-right:16px}
+.thm i{width:104px;height:66px;border-radius:9px;border:2px solid transparent;box-shadow:0 0 0 .5px var(--line);display:block}
+.thm.on i{border-color:var(--accent)}.thm.on span{font-weight:600}
+.sw{width:22px;height:22px;border-radius:50%;margin-right:10px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.3);position:relative}
+.sw.on::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent)}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wg button{text-align:left;font-size:12px}.wg i{display:block;height:84px;border-radius:9px;margin-bottom:6px;border:2px solid transparent;box-shadow:0 0 0 .5px var(--line)}.wg .on i{border-color:var(--accent)}
+.grp{background:var(--glass2);border-radius:10px}.grp div{display:flex;justify-content:space-between;padding:10px 14px}.grp div+div{border-top:.5px solid var(--line)}
 
-/* ── REFLEX ── */
-#reflex-area{height:200px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:16px 0;transition:background 0.1s;user-select:none;-webkit-user-select:none;}
-#reflex-area.waiting{background:rgba(230,57,70,0.08);border-color:var(--accent2);}
-#reflex-area.go{background:rgba(57,255,20,0.12);border-color:var(--green);}
-#reflex-msg{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.1em;text-align:center;color:var(--text);}
-.reflex-scores{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.rscore{background:var(--surface);border:1px solid var(--border);padding:6px 12px;font-size:0.72rem;font-family:'Share Tech Mono',monospace;color:var(--muted);}
-.rscore.best{border-color:var(--accent);color:var(--accent);}
+/* panels */
+.panel{position:fixed;background:var(--glass);border:.5px solid var(--line);border-radius:18px;box-shadow:var(--shadow),var(--ring);z-index:9500;display:none}
+.panel.show{display:block;animation:pop .16s ease-out}
+#cc{top:34px;right:8px;width:322px;padding:12px}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ct{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:var(--glass2);text-align:left}
+.ct .ci{width:32px;height:32px;border-radius:50%;background:var(--glass2);display:grid;place-items:center;flex:none}
+.ct.on .ci{background:var(--accent);color:#fff}
+.ct b{display:block;font-weight:600;font-size:12.5px}.ct span{font-size:11.5px;color:var(--dim)}
+.sl{background:var(--glass2);border-radius:14px;padding:8px 12px 10px;margin-top:8px}.sl label{font-size:12px;font-weight:600;display:block;margin-bottom:6px}
+.rng{position:relative}
+.rng input{-webkit-appearance:none;appearance:none;width:100%;height:28px;border-radius:14px;background:linear-gradient(to right,#fff var(--v,50%),rgba(255,255,255,.18) var(--v,50%))}
+.rng input::-webkit-slider-thumb{-webkit-appearance:none;width:1px;height:28px;background:transparent}
+.rng input::-moz-range-thumb{width:1px;height:28px;background:transparent;border:0}
+.rng svg{position:absolute;left:8px;top:6px;color:#333;pointer-events:none}
+#spot{top:17%;left:50%;transform:translateX(-50%);width:min(620px,92vw);padding:10px;border-radius:16px}
+#spot.show{animation:none}
+.sbox{display:flex;align-items:center;gap:12px;padding:6px 10px;color:var(--dim)}
+#q{flex:1;background:transparent;border:0;font-size:22px;font-weight:300;color:var(--text)}
+#res{max-height:320px;overflow:auto;margin-top:4px}
+#res button{display:flex;align-items:center;gap:12px;width:100%;padding:7px 10px;border-radius:9px;text-align:left}
+#res button.on{background:var(--accent);color:#fff}
+.mini{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:#fff;flex:none}.mini svg{width:16px;height:16px}
 
-/* ── HACK TERMINAL ── */
-#terminal{background:#000;border:1px solid rgba(57,255,20,0.3);padding:16px;height:320px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:0.72rem;line-height:1.6;scrollbar-width:thin;scrollbar-color:rgba(57,255,20,0.3) transparent;margin-bottom:12px;}
-#terminal::-webkit-scrollbar{width:4px;}
-#terminal::-webkit-scrollbar-thumb{background:rgba(57,255,20,0.3);}
-.t-line{margin-bottom:2px;}
-.t-sys{color:rgba(57,255,20,0.5);}
-.t-cmd{color:var(--green);}
-.t-out{color:rgba(57,255,20,0.8);}
-.t-err{color:var(--accent2);}
-.t-warn{color:var(--accent);}
-.t-info{color:var(--cyan);}
-#terminal-input-row{display:flex;gap:8px;align-items:center;}
-#terminal-prompt{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--green);white-space:nowrap;}
-#terminal-input{flex:1;background:transparent;border:none;border-bottom:1px solid rgba(57,255,20,0.3);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:4px 8px;outline:none;caret-color:var(--green);}
-.progress-bar-hack{height:6px;background:rgba(57,255,20,0.1);margin:4px 0;position:relative;overflow:hidden;}
-.progress-bar-hack-fill{height:6px;background:var(--green);animation:hack-fill 2s ease forwards;}
-@keyframes hack-fill{from{width:0%}to{width:var(--w,100%)}}
-
-/* ── NOTES ── */
-.note-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-.note-item{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:12px 14px;cursor:pointer;transition:all 0.15s;}
-.note-item:hover{border-color:var(--accent);}
-.note-title{font-weight:700;font-size:0.88rem;color:var(--text);}
-.note-preview{font-size:0.72rem;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.note-date{font-size:0.6rem;color:var(--muted);margin-top:4px;font-family:'Share Tech Mono',monospace;}
-#note-editor{display:none;}
-#note-editor.show{display:block;}
-#note-list-view.hidden{display:none;}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp 0.3s ease forwards;}
+/* toast, lock */
+#toasts{position:fixed;top:38px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:9600;pointer-events:none}
+.toast{background:var(--glass);border:.5px solid var(--line);border-radius:16px;padding:11px 14px;width:310px;display:flex;gap:11px;align-items:center;animation:pop .25s ease-out;box-shadow:var(--shadow)}
+.toast b{display:block;font-weight:600}.toast span{color:var(--dim);font-size:12.5px}
+#lock{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;color:#fff;background:rgba(0,0,0,.22);backdrop-filter:blur(30px) brightness(.85);-webkit-backdrop-filter:blur(30px) brightness(.85);transition:opacity .6s,transform .6s;cursor:default}
+#lock.gone{opacity:0;transform:scale(1.04);pointer-events:none}
+#lockd{margin-top:9vh;font-size:20px;font-weight:500;opacity:.9}
+#lockt{font-size:min(120px,24vw);font-weight:200;letter-spacing:-.04em;line-height:1.05}
+#lockb{margin-top:auto;margin-bottom:8vh;display:flex;flex-direction:column;align-items:center;gap:10px}
+.av{width:64px;height:64px;border-radius:50%;background:linear-gradient(160deg,#9aa0b4,#5b6075);display:grid;place-items:center;font-size:26px;font-weight:600;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3)}
+.pass{padding:7px 20px;border-radius:999px;background:rgba(255,255,255,.18);font-size:12.5px}
+@media (max-width:820px){#widgets{display:none}.dk{width:40px;height:40px}}
 </style>
 </head>
 <body>
+<div id="wall" class="wp0"></div>
+<div id="bar" class="blur">
+  <div class="g" id="lbar"></div>
+  <div class="g" id="rbar"></div>
+</div>
+<div id="menu" class="blur"></div>
 
-<!-- BOOT -->
-<div id="boot">
-  <div id="boot-logo">KRONOS</div>
-  <div id="boot-sub">by KS Tech</div>
-  <div id="boot-bar-wrap"><div id="boot-bar"></div></div>
-  <div id="boot-msg">Initialising...</div>
+<div id="widgets">
+  <div class="card cal" id="cal"></div>
+  <div class="card wx"><div><div class="dim" style="font-size:12px;font-weight:600">Clear</div><b>22°</b><div class="dim" style="font-size:12px">H 25°  L 16°</div></div><div id="sun" style="color:#ffd60a"></div></div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <div id="topbar">
-    <div>
-      <div id="topbar-logo">KRONOS</div>
-      <div id="topbar-sub">by KS Tech</div>
-    </div>
-    <div id="topbar-time"></div>
-  </div>
+<div id="dockwrap"><div id="dock"></div></div>
 
-  <div id="nav">
-    <button class="nav-tab active" onclick="showPage('home')">Home</button>
-    <button class="nav-tab" onclick="showPage('mystery')">Mystery</button>
-    <button class="nav-tab" onclick="showPage('puzzle')">Puzzle</button>
-    <button class="nav-tab" onclick="showPage('riddle')">Riddle</button>
-    <button class="nav-tab" onclick="showPage('roast')">Roast</button>
-    <button class="nav-tab" onclick="showPage('science')">Science</button>
-    <button class="nav-tab" onclick="showPage('coins')">Coins</button>
-    <button class="nav-tab" onclick="showPage('reflex')">Reflex</button>
-    <button class="nav-tab" onclick="showPage('hack')">Hack</button>
-    <button class="nav-tab" onclick="showPage('notes')">Notes</button>
+<div class="panel blur" id="cc">
+  <div class="cg">
+    <button class="ct on" id="tWifi"><span class="ci" id="iw"></span><div><b>Wi-Fi</b><span>Home network</span></div></button>
+    <button class="ct" id="tBt"><span class="ci" id="ib"></span><div><b>Bluetooth</b><span>Off</span></div></button>
+    <button class="ct on" id="tDark"><span class="ci" id="id"></span><div><b>Dark mode</b><span>On</span></div></button>
+    <button class="ct" id="tDnd"><span class="ci" id="im"></span><div><b>Focus</b><span>Off</span></div></button>
   </div>
+  <div class="sl"><label>Display</label><div class="rng"><span id="isun"></span><input type="range" id="bright" min="35" max="100" value="100"></div></div>
+  <div class="sl"><label>Sound</label><div class="rng"><span id="ivol"></span><input type="range" id="vol" min="0" max="100" value="60"></div></div>
+</div>
 
-  <!-- HOME -->
-  <div class="page active" id="page-home">
-    <div style="padding-top:16px;">
-      <div class="home-hero">
-        <div class="home-hero-title">KRONOS</div>
-        <div class="home-hero-sub">Your personal universe · by KS Tech</div>
-      </div>
-      <div class="streak-bar">
-        <div class="streak-item"><div class="streak-val" id="home-streak">0</div><div class="streak-key">Day Streak</div></div>
-        <div class="streak-item"><div class="streak-val" id="home-solved">0</div><div class="streak-key">Solved</div></div>
-        <div class="streak-item"><div class="streak-val" id="home-coins-count">0</div><div class="streak-key">Coins</div></div>
-        <div class="streak-item"><div class="streak-val" id="home-best-reflex">—</div><div class="streak-key">Best ms</div></div>
-      </div>
-      <div class="home-grid">
-        <div class="home-card" onclick="showPage('mystery')"><div class="home-icon">🔍</div><div class="home-card-title">Mystery</div><div class="home-card-sub">Detective stories</div></div>
-        <div class="home-card" onclick="showPage('puzzle')"><div class="home-icon">🧩</div><div class="home-card-title">Puzzle</div><div class="home-card-sub">Daily challenge</div></div>
-        <div class="home-card" onclick="showPage('riddle')"><div class="home-icon">🎭</div><div class="home-card-title">Riddle</div><div class="home-card-sub">Riddle of the day</div></div>
-        <div class="home-card" onclick="showPage('roast')"><div class="home-icon">🔥</div><div class="home-card-title">Roast</div><div class="home-card-sub">Get destroyed</div></div>
-        <div class="home-card" onclick="showPage('science')"><div class="home-icon">⚗️</div><div class="home-card-title">Science</div><div class="home-card-sub">Deep facts</div></div>
-        <div class="home-card" onclick="showPage('coins')"><div class="home-icon">🪙</div><div class="home-card-title">Coins</div><div class="home-card-sub">Collector log</div></div>
-        <div class="home-card" onclick="showPage('reflex')"><div class="home-icon">⚡</div><div class="home-card-title">Reflex</div><div class="home-card-sub">Test your speed</div></div>
-        <div class="home-card" onclick="showPage('hack')"><div class="home-icon">💻</div><div class="home-card-title">Hack</div><div class="home-card-sub">Terminal sim</div></div>
-        <div class="home-card" onclick="showPage('notes')" style="grid-column:span 2;"><div class="home-icon">📓</div><div class="home-card-title">Notes</div><div class="home-card-sub">Ideas & thoughts</div></div>
-      </div>
-    </div>
-  </div>
+<div class="panel blur" id="spot">
+  <div class="sbox"><span id="isearch"></span><input id="q" placeholder="Spotlight Search" autocomplete="off" spellcheck="false"></div>
+  <div id="res"></div>
+</div>
 
-  <!-- MYSTERY -->
-  <div class="page" id="page-mystery">
-    <div class="page-title">Mystery</div>
-    <div class="page-desc">Detective stories — branching paths, pre-written, no internet needed</div>
-    <div id="mystery-select">
-      <div class="label">Choose a case</div>
-      <div id="mystery-cases"></div>
-    </div>
-    <div id="mystery-game" style="display:none;">
-      <div class="mystery-header">
-        <span class="chapter-tag" id="m-chapter">Chapter I</span>
-        <div class="progress-dots" id="m-dots"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="story-text" id="m-text"></div>
-      <div id="m-clues-section" style="display:none;margin-bottom:16px;">
-        <div class="label">Clues collected</div>
-        <div id="m-clues"></div>
-      </div>
-      <div id="m-choices"></div>
-      <div id="m-ending" style="display:none;">
-        <div class="divider"></div>
-        <div class="result-box" id="m-ending-text"></div>
-        <button class="btn btn-full" onclick="resetMystery()">▸ New Case</button>
-      </div>
-    </div>
-  </div>
+<div id="toasts"></div>
+<div id="dimmer"></div>
 
-  <!-- PUZZLE -->
-  <div class="page" id="page-puzzle">
-    <div class="page-title">Daily Puzzle</div>
-    <div class="page-desc">Resets every day. Choose your difficulty.</div>
-    <div class="diff-row">
-      <button class="diff-btn active" onclick="setPuzzleDiff('easy',this)">Easy</button>
-      <button class="diff-btn" onclick="setPuzzleDiff('medium',this)">Medium</button>
-      <button class="diff-btn" onclick="setPuzzleDiff('hard',this)">Hard</button>
-    </div>
-    <div class="card">
-      <div class="label">Today's Puzzle</div>
-      <div id="puzzle-question" style="font-size:0.92rem;line-height:1.7;margin-bottom:12px;"></div>
-      <div id="puzzle-options"></div>
-      <div id="puzzle-result" style="display:none;margin-top:12px;" class="result-box"></div>
-      <button class="btn btn-full" style="margin-top:12px;" onclick="nextPuzzle()" id="puzzle-next-btn">Next Puzzle ▸</button>
-    </div>
-    <div style="font-size:0.7rem;color:var(--muted);text-align:center;" id="puzzle-counter"></div>
-  </div>
-
-  <!-- RIDDLE -->
-  <div class="page" id="page-riddle">
-    <div class="page-title">Riddle</div>
-    <div class="page-desc">One riddle per day. No peeking at the answer too fast.</div>
-    <div class="diff-row">
-      <button class="diff-btn active" onclick="setRiddleDiff('easy',this)">Easy</button>
-      <button class="diff-btn" onclick="setRiddleDiff('medium',this)">Medium</button>
-      <button class="diff-btn" onclick="setRiddleDiff('hard',this)">Hard</button>
-    </div>
-    <div class="card">
-      <div class="label">Today's Riddle</div>
-      <div class="riddle-q" id="riddle-q"></div>
-      <div class="riddle-hint" id="riddle-hint"></div>
-      <div class="answer-reveal" id="riddle-answer">
-        <div class="label">Answer</div>
-        <div class="answer-text" id="riddle-answer-text"></div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;" id="riddle-explain"></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-        <button class="btn" onclick="showRiddleHint()">Hint</button>
-        <button class="btn btn-red" onclick="revealRiddle()">Reveal Answer</button>
-        <button class="btn btn-cyan" onclick="nextRiddle()">Next ▸</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROAST -->
-  <div class="page" id="page-roast">
-    <div class="page-title">Roast Machine</div>
-    <div class="page-desc">Describe yourself. Brace for impact.</div>
-    <div class="card">
-      <div class="label">Your title / type</div>
-      <select id="roast-type">
-        <option value="student">Struggling Student</option>
-        <option value="neet">NEET Aspirant</option>
-        <option value="coder">Aspiring Developer</option>
-        <option value="gamer">Gamer (procrastinator edition)</option>
-        <option value="overthinker">Professional Overthinker</option>
-        <option value="collector">Rare Coin Collector</option>
-        <option value="insomniac">Night Owl / Insomniac</option>
-        <option value="dreamer">Big Dreamer, Zero Action</option>
-      </select>
-    </div>
-    <button class="btn btn-red btn-full" onclick="generateRoast()" style="margin-bottom:16px;">🔥 ROAST ME</button>
-    <div id="roast-output-area" style="display:none;">
-      <div class="roast-output" id="roast-text"></div>
-      <div class="roast-verdict" id="roast-verdict"></div>
-      <button class="btn btn-full" onclick="generateRoast()" style="margin-top:12px;">Another Round 🔥</button>
-    </div>
-  </div>
-
-  <!-- SCIENCE -->
-  <div class="page" id="page-science">
-    <div class="page-title">Science</div>
-    <div class="page-desc">Deep facts. Things that make you stare at the ceiling.</div>
-    <div class="fact-category">
-      <button class="cat-btn active" onclick="setSciCat('all',this)">All</button>
-      <button class="cat-btn" onclick="setSciCat('physics',this)">Physics</button>
-      <button class="cat-btn" onclick="setSciCat('biology',this)">Biology</button>
-      <button class="cat-btn" onclick="setSciCat('chemistry',this)">Chemistry</button>
-      <button class="cat-btn" onclick="setSciCat('space',this)">Space</button>
-      <button class="cat-btn" onclick="setSciCat('mind',this)">Mind</button>
-    </div>
-    <div class="card">
-      <div class="label" id="sci-cat-label">Category · All</div>
-      <div class="fact-title" id="sci-title"></div>
-      <div class="fact-body" id="sci-body"></div>
-      <div class="fact-deep" id="sci-deep"></div>
-      <div class="wow-meter">
-        <div class="wow-label">Wow factor</div>
-        <div class="wow-bar"><div class="wow-fill" id="sci-wow" style="width:0%"></div></div>
-      </div>
-    </div>
-    <button class="btn btn-cyan btn-full" onclick="nextFact()">Next Fact ▸</button>
-  </div>
-
-  <!-- COINS -->
-  <div class="page" id="page-coins">
-    <div class="page-title">Coin Collector</div>
-    <div class="page-desc">Log your collection. India + World. Stored on your device.</div>
-    <div class="coin-stats">
-      <div class="cstat"><div class="cstat-val" id="c-total">0</div><div class="cstat-key">Total</div></div>
-      <div class="cstat"><div class="cstat-val" id="c-rare">0</div><div class="cstat-key">Rare+</div></div>
-      <div class="cstat"><div class="cstat-val" id="c-countries">0</div><div class="cstat-key">Countries</div></div>
-    </div>
-    <div id="coin-tabs" style="display:flex;gap:8px;margin-bottom:16px;">
-      <button class="diff-btn active" onclick="setCoinTab('log',this)" id="ct-log">My Log</button>
-      <button class="diff-btn" onclick="setCoinTab('add',this)" id="ct-add">Add Coin</button>
-      <button class="diff-btn" onclick="setCoinTab('info',this)" id="ct-info">Rare Info</button>
-    </div>
-    <div id="coin-log-tab">
-      <div id="coin-list"></div>
-      <div id="coin-empty" style="text-align:center;color:var(--muted);font-size:0.8rem;padding:30px 0;">No coins yet. Add your first one.</div>
-    </div>
-    <div id="coin-add-tab" style="display:none;">
-      <div class="coin-form">
-        <div><div class="label">Coin Name</div><input type="text" id="c-name" placeholder="e.g. 1950 Anna, Morgan Dollar..."/></div>
-        <div><div class="label">Year</div><input type="number" id="c-year" placeholder="e.g. 1950"/></div>
-        <div><div class="label">Country / Mint</div><input type="text" id="c-country" placeholder="e.g. India, USA, UK..."/></div>
-        <div><div class="label">Denomination</div><input type="text" id="c-denom" placeholder="e.g. 1 Rupee, 1 Dollar..."/></div>
-        <div><div class="label">Rarity</div>
-          <select id="c-rarity">
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="legendary">Legendary / Proof</option>
-          </select>
-        </div>
-        <div><div class="label">Notes (optional)</div><textarea id="c-notes" placeholder="Condition, where acquired, estimated value..."></textarea></div>
-      </div>
-      <button class="btn btn-full" onclick="addCoin()">Add to Collection ▸</button>
-    </div>
-    <div id="coin-info-tab" style="display:none;" id="coin-info-content"></div>
-  </div>
-
-  <!-- REFLEX -->
-  <div class="page" id="page-reflex">
-    <div class="page-title">Reflex Test</div>
-    <div class="page-desc">Tap when it turns green. As fast as you can.</div>
-    <div id="reflex-area" onclick="reflexTap()">
-      <div id="reflex-msg">TAP TO START</div>
-    </div>
-    <div style="text-align:center;margin-bottom:8px;">
-      <div class="label">Last Score</div>
-      <div class="big-num" id="reflex-last">—</div>
-      <div style="font-size:0.65rem;color:var(--muted);">milliseconds</div>
-    </div>
-    <div class="divider"></div>
-    <div class="label">Score History (last 10)</div>
-    <div class="reflex-scores" id="reflex-scores-list"></div>
-  </div>
-
-  <!-- HACK TERMINAL -->
-  <div class="page" id="page-hack">
-    <div class="page-title">Hack Terminal</div>
-    <div class="page-desc">Type commands. Feel like a hacker. Fully fictional.</div>
-    <div id="terminal"></div>
-    <div id="terminal-input-row">
-      <span id="terminal-prompt">root@kronos:~$</span>
-      <input type="text" id="terminal-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type 'help'"/>
-    </div>
-  </div>
-
-  <!-- NOTES -->
-  <div class="page" id="page-notes">
-    <div class="page-title">Notes</div>
-    <div class="page-desc">Ideas, thoughts, anything. Saved on your device.</div>
-    <div id="note-list-view">
-      <button class="btn btn-full" onclick="newNote()" style="margin-bottom:16px;">+ New Note</button>
-      <div class="note-list" id="notes-list"></div>
-      <div id="notes-empty" style="text-align:center;color:var(--muted);font-size:0.8rem;padding:30px 0;display:none;">No notes yet.</div>
-    </div>
-    <div id="note-editor">
-      <input type="text" id="note-title-input" placeholder="Title..." style="margin-bottom:10px;font-size:1rem;font-weight:700;"/>
-      <textarea id="note-body-input" style="height:220px;margin-bottom:10px;" placeholder="Write anything..."></textarea>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" onclick="saveNote()">Save</button>
-        <button class="btn btn-red" onclick="deleteNote()">Delete</button>
-        <button class="btn" onclick="closeNoteEditor()">Back</button>
-      </div>
-    </div>
-  </div>
+<div id="lock">
+  <div id="lockd"></div><div id="lockt"></div>
+  <div id="lockb"><div class="av">S</div><div style="font-weight:600;font-size:15px">Student</div><div class="pass">Click or press Enter to unlock</div></div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════
-const bootMsgs = ['Loading modules...','Decrypting archives...','Syncing timeline...','Unlocking KRONOS...','Ready.'];
-let bootPct = 0;
-const bootBar = document.getElementById('boot-bar');
-const bootMsg = document.getElementById('boot-msg');
-function bootStep(i) {
-  if (i >= bootMsgs.length) {
-    document.getElementById('boot').style.display = 'none';
-    document.getElementById('app').classList.add('show');
-    initAll(); return;
-  }
-  bootPct = (i+1) / bootMsgs.length * 100;
-  bootBar.style.width = bootPct + '%';
-  bootMsg.textContent = bootMsgs[i];
-  setTimeout(() => bootStep(i+1), 280);
-}
-setTimeout(() => bootStep(0), 400);
-
-// ═══════════════════════════════════════════
-// CORE NAV
-// ═══════════════════════════════════════════
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  const tabs = document.querySelectorAll('.nav-tab');
-  tabs.forEach(t => { if (t.textContent.toLowerCase().includes(id.slice(0,4))) t.classList.add('active'); });
-  window.scrollTo(0, 0);
-}
-
-// Clock
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('topbar-time').innerHTML = h+':'+m+':'+s+'<br><span style="font-size:0.55rem;letter-spacing:0.15em;">'
-    + now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + '</span>';
-}
-setInterval(updateClock, 1000); updateClock();
-
-function initAll() {
-  initMystery(); initPuzzle(); initRiddle(); initRoast();
-  initScience(); initCoins(); initReflex(); initTerminal(); initNotes();
-  updateHomeStats();
-}
-
-function updateHomeStats() {
-  const coins = JSON.parse(localStorage.getItem('kronos_coins') || '[]');
-  const reflexScores = JSON.parse(localStorage.getItem('kronos_reflex') || '[]');
-  const solved = parseInt(localStorage.getItem('kronos_solved') || '0');
-  const streak = parseInt(localStorage.getItem('kronos_streak') || '0');
-  document.getElementById('home-streak').textContent = streak;
-  document.getElementById('home-solved').textContent = solved;
-  document.getElementById('home-coins-count').textContent = coins.length;
-  const best = reflexScores.length ? Math.min(...reflexScores) : null;
-  document.getElementById('home-best-reflex').textContent = best ? best : '—';
-}
-
-// ═══════════════════════════════════════════
-// MYSTERY
-// ═══════════════════════════════════════════
-const MYSTERIES = [
-  {
-    id:'manor', title:'The Locked Manor', icon:'🏚', desc:'A body, a storm, no exits.',
-    chapters:[
-      {
-        text:'You arrive at <em>Voss Manor</em> on the worst night of the year. Rain hammers the windows. Inside, Lord Aldric Voss lies dead at his desk — a single stab wound, no weapon found. Three people were in the manor: his nephew <em>Felix</em>, his secretary <em>Mrs. Crane</em>, and the cook <em>Dario</em>. The back door is locked from the inside.',
-        clue:'The back door is locked from inside — yet someone claims they heard it slam.',
-        choices:['Examine the study where the body was found','Question Felix — he seems nervous','Check the kitchen and speak to Dario']
-      },
-      {
-        text:'The study is meticulously clean — except for a faint smell of <em>lavender perfume</em> that doesn\'t belong to Lord Voss. His diary lies open on the desk. The last entry reads: <em>"She knows. Tonight I will tell the others."</em> A half-burned letter sits in the fireplace grate.',
-        clue:'Lavender perfume in the study. Last diary entry: "She knows."',
-        choices:['Retrieve and read the half-burned letter','Ask Mrs. Crane about the perfume','Search the rest of the manor for the weapon']
-      },
-      {
-        text:'Felix is pacing the hallway. He admits he argued with his uncle earlier about inheritance. But he says: <em>"Ask Crane where she was at 10pm. She wasn\'t in her room — I saw her coming from the east wing."</em> He\'s hiding something — his hands are ink-stained and he keeps glancing at his coat pocket.',
-        clue:'Felix has ink-stained hands and something in his coat pocket.',
-        choices:['Demand Felix empty his pockets','Go to the east wing immediately','Ask Dario if he saw anyone near the east wing']
-      },
-      {
-        text:'The east wing contains Lord Voss\'s private safe — cracked open and empty. Inside the safe door: a scrawled note reading <em>"CRANE — FINAL WARNING."</em> On the floor, a silver letter opener, monogrammed <em>H.C.</em> — matching Mrs. Crane\'s initials. The blade has a dark stain.',
-        clue:'Silver letter opener monogrammed H.C. found near open safe. Safe emptied.',
-        choices:['Confront Mrs. Crane with the evidence','Check what was in the safe by asking Dario','Look for Mrs. Crane\'s lavender perfume bottle in her room']
-      },
-      {
-        text:'Mrs. Crane, cornered, breaks. Lord Voss had discovered she\'d been forging his signature to transfer funds. She went to plead with him that night. They argued. She claims he fell and struck the letter opener accidentally — that she panicked, took the money from the safe, and fled to her room. But something in her story doesn\'t add up.',
-        clue:'Crane claims accidental death. But the wound angle suggests otherwise.',
-        choices:['The wound angle proves she\'s lying — she stabbed him deliberately','She\'s telling the truth — it was an accident and she panicked','Felix is the real killer — he forged the note to frame Crane']
-      },
-      {
-        text:'',ending:true,
-        outcomes:{
-          0:'<strong>CASE SOLVED.</strong> You demonstrate that a fall cannot produce an upward-angled wound. Mrs. Crane, the secretary, killed Lord Voss deliberately when he threatened to expose her embezzlement. The ink on Felix\'s hands? He was desperately writing a letter to warn his uncle — too late. The locked back door? Crane had a duplicate key. Every clue led here.',
-          1:'<strong>PARTIAL CREDIT.</strong> Mrs. Crane is charged with manslaughter. The truth is murkier — the wound was inflicted in a struggle, not a clean strike. You solved it, but let the full premeditation slip. The money is recovered. Crane serves a lesser sentence.',
-          2:'<strong>WRONG.</strong> Felix is released immediately — his ink-stained hands were from writing a warning letter to his uncle. Mrs. Crane escapes with the money. A real detective rechecks the wound angle before accusing.'
-        }
-      }
-    ]
-  },
-  {
-    id:'train', title:'The 11:47 Express', icon:'🚂', desc:'Murder between stations.',
-    chapters:[
-      {
-        text:'The <em>11:47 Express</em> — mid-journey, no stops for two hours. Businessman <em>Victor Hale</em> is found strangled in Cabin 4. His bodyguard, <em>Ramos</em>, was supposedly stationed outside the door all night. Other passengers: <em>Dr. Priya Nair</em> (returning from a conference), and <em>Thomas Webb</em>, a journalist. The conductor, <em>Singh</em>, has a key to every cabin.',
-        clue:'Bodyguard was at the door — yet Hale was strangled inside.',
-        choices:['Examine Cabin 4 for physical evidence','Question Ramos about the timeline','Ask conductor Singh who requested the cabin arrangement']
-      },
-      {
-        text:'Cabin 4 shows signs of a struggle — a shattered watch reads <em>11:12pm</em>. The window is latched from inside. But the ventilation hatch above the bunk is slightly ajar. Hale\'s briefcase is open and empty — whatever was inside is gone. A single <em>dark fibre</em> is caught on the bunk railing.',
-        clue:'Shattered watch: 11:12pm. Ventilation hatch ajar. Briefcase emptied.',
-        choices:['Examine the ventilation shaft','Find out what Hale was carrying in that briefcase','Match the dark fibre to someone\'s clothing']
-      },
-      {
-        text:'Ramos is a wall of silence — until you notice a <em>fresh bruise</em> on his knuckles and a missing shirt button. He claims he heard nothing. But Dr. Nair volunteers: she heard raised voices in Cabin 4 at <em>11:05pm</em> — one voice she recognised as Hale\'s, the other she describes as <em>"low, deliberate, calm."</em>',
-        clue:'Ramos has fresh bruise and missing button. Voices heard at 11:05pm.',
-        choices:['The calm voice matches Webb — confront the journalist','The bodyguard Ramos is lying — press him harder','Ask conductor Singh about unusual activity at 11pm']
-      },
-      {
-        text:'Webb, the journalist, was investigating Hale for <em>defence contract fraud</em>. He had documents. But Webb shows you his hands — clean, no fibres, no bruise. He shows you his cabin key — there\'s no way he could have reached Cabin 4 without Ramos seeing him. Then Conductor Singh mentions: <em>"Ramos asked me to switch his post to the far end at 10:50pm."</em>',
-        clue:'Ramos repositioned himself at 10:50pm — why? Webb has an alibi.',
-        choices:['Ramos moved himself to give someone access — but who did he let in?','Ramos IS the killer — he entered the cabin himself','Singh the conductor had motive and opportunity — examine his uniform']
-      },
-      {
-        text:'Singh\'s uniform jacket has a <em>missing button</em> — matching the one found in Cabin 4. The dark fibre matches his uniform. But Singh had no motive — until you discover he was on Hale\'s payroll as an informant, and Hale had just decided to cut him off. Ramos moved his post because Singh bribed him. Singh accessed Cabin 4 with his master key.',
-        clue:'Singh\'s missing button matches. Singh was Hale\'s informant being cut off.',
-        choices:['Conductor Singh is the killer — confront him with the evidence','Ramos and Singh conspired together','There\'s still something missing — look again at Dr. Nair']
-      },
-      {
-        text:'',ending:true,
-        outcomes:{
-          0:'<strong>CASE SOLVED.</strong> Singh, the conductor, killed Hale with a garrotte wire he\'d hidden in his uniform. Ramos was bribed to clear the corridor. The ventilation hatch was a red herring — Singh used the master key while Ramos stood down. Every piece fit: the button, the fibre, the timeline, the motive. You solved it before the next station.',
-          1:'<strong>PARTIAL CREDIT.</strong> Both Singh and Ramos are arrested. Ramos is charged as an accessory for accepting the bribe. Singh is convicted of murder. You got there, but let Ramos claim ignorance too easily.',
-          2:'<strong>WRONG.</strong> Dr. Nair is entirely clean — she was the only one telling the truth. Singh slips off the train at the next stop and disappears. Learn to follow the physical evidence, not the suspicious ones.'
-        }
-      }
-    ]
-  }
-];
-
-let mState = { caseIdx:0, chapterIdx:0, clues:[], outcomeChosen:null };
-
-function initMystery() {
-  const container = document.getElementById('mystery-cases');
-  container.innerHTML = MYSTERIES.map((m,i) => `
-    <div class="card" style="cursor:pointer;" onclick="startMystery(${i})">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="font-size:2rem;">${m.icon}</div>
-        <div>
-          <div style="font-weight:700;font-size:0.95rem;">${m.title}</div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">${m.desc}</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function startMystery(idx) {
-  mState = { caseIdx:idx, chapterIdx:0, clues:[], outcomeChosen:null };
-  document.getElementById('mystery-select').style.display = 'none';
-  document.getElementById('mystery-game').style.display = 'block';
-  renderChapter();
-}
-
-function renderChapter() {
-  const m = MYSTERIES[mState.caseIdx];
-  const ch = m.chapters[mState.chapterIdx];
-  const total = m.chapters.length - 1;
-
-  // dots
-  let dotsHtml = '';
-  for (let i = 0; i < total; i++) {
-    let cls = i < mState.chapterIdx ? 'done' : (i === mState.chapterIdx ? 'cur' : '');
-    dotsHtml += `<div class="pdot ${cls}"></div>`;
-  }
-  document.getElementById('m-dots').innerHTML = dotsHtml;
-  document.getElementById('m-chapter').textContent = 'Chapter ' + ['I','II','III','IV','V','VI'][mState.chapterIdx];
-
-  if (ch.ending) {
-    // final
-    document.getElementById('m-choices').innerHTML = '';
-    document.getElementById('m-text').innerHTML = '';
-    const endDiv = document.getElementById('m-ending');
-    endDiv.style.display = 'block';
-    const outcome = ch.outcomes[mState.outcomeChosen !== null ? mState.outcomeChosen : 0];
-    document.getElementById('m-ending-text').innerHTML = outcome;
-    // increment solved
-    if (mState.outcomeChosen === 0) {
-      const s = parseInt(localStorage.getItem('kronos_solved') || '0');
-      localStorage.setItem('kronos_solved', s+1);
-    }
-    return;
-  }
-
-  document.getElementById('m-text').innerHTML = ch.text;
-  document.getElementById('m-ending').style.display = 'none';
-
-  if (ch.clue) {
-    if (!mState.clues.includes(ch.clue)) mState.clues.push(ch.clue);
-    const cs = document.getElementById('m-clues-section');
-    cs.style.display = 'block';
-    document.getElementById('m-clues').innerHTML = mState.clues.map(c =>
-      `<span class="clue-badge">${c}</span>`).join('');
-  }
-
-  const choicesDiv = document.getElementById('m-choices');
-  choicesDiv.innerHTML = ch.choices.map((c,i) =>
-    `<button class="choice-btn" onclick="chooseMystery(${i})">[${i+1}] ${c}</button>`
-  ).join('');
-}
-
-function chooseMystery(idx) {
-  const m = MYSTERIES[mState.caseIdx];
-  const ch = m.chapters[mState.chapterIdx];
-  // on last choice chapter, store outcome
-  if (mState.chapterIdx === m.chapters.length - 2) {
-    mState.outcomeChosen = idx;
-  }
-  mState.chapterIdx++;
-  renderChapter();
-}
-
-function resetMystery() {
-  document.getElementById('mystery-select').style.display = 'block';
-  document.getElementById('mystery-game').style.display = 'none';
-  document.getElementById('m-clues-section').style.display = 'none';
-  document.getElementById('m-clues').innerHTML = '';
-}
-
-// ═══════════════════════════════════════════
-// PUZZLE
-// ═══════════════════════════════════════════
-const PUZZLES = {
-  easy:[
-    {q:'What comes next in the sequence? 2, 4, 8, 16, __',opts:['24','32','30','20'],ans:1,exp:'Each number doubles. 16 × 2 = 32.'},
-    {q:'A farmer has 17 sheep. All but 9 run away. How many sheep does the farmer have?',opts:['8','9','17','None'],ans:1,exp:'"All but 9" means 9 remain.'},
-    {q:'What 3-letter word can be placed in front of LIGHT, HOUSE, and ROOM to make new words?',opts:['SUN','DAY','BIG','OUT'],ans:0,exp:'SUNLIGHT, SUNHOUSE (sun-house), SUNROOM. SUN works for all three.'},
-    {q:'If you have a 3-litre jug and a 5-litre jug, how do you measure exactly 4 litres?',opts:['Fill 5, pour into 3, empty 3, pour remaining into 3, fill 5 again, top up 3','Fill 3 twice into 5','Fill both and combine','Not possible'],ans:0,exp:'Classic water jug puzzle. Fill 5L, pour 3L out, 2L remains. Empty 3L jug. Pour 2L in. Fill 5L again. Pour 1L into 3L jug. 4L remains in 5L jug.'},
-    {q:'I speak without a mouth, hear without ears, have no body but come alive with wind. What am I?',opts:['Shadow','Echo','Fire','Mirror'],ans:1,exp:'An echo "speaks" your words back, "hears" sounds, and travels through the air like wind.'},
-  ],
-  medium:[
-    {q:'A snail is at the bottom of a 10m well. Each day it climbs 3m, each night slides back 2m. On which day does it reach the top?',opts:['Day 7','Day 8','Day 9','Day 10'],ans:1,exp:'After day 7, snail is at 7m. On day 8 it climbs to 10m and escapes. Answer: Day 8.'},
-    {q:'NEET 2023: Which of the following is the site of light reaction in photosynthesis?',opts:['Stroma','Matrix','Thylakoid membrane','Inner mitochondrial membrane'],ans:2,exp:'The light-dependent reactions occur on the thylakoid membranes of chloroplasts, where photosystems I and II are embedded.'},
-    {q:'I have cities but no houses, mountains but no trees, water but no fish, and roads but no cars. What am I?',opts:['A dream','A painting','A map','A mirror'],ans:2,exp:'A map represents all these geographic features as symbols without the actual things.'},
-    {q:'What is the missing number? 1, 1, 2, 3, 5, 8, 13, __',opts:['18','20','21','24'],ans:2,exp:'Fibonacci sequence — each number is the sum of the two before it. 8+13=21.'},
-    {q:'If all Bloops are Razzies and all Razzies are Lazzies, are all Bloops definitely Lazzies?',opts:['Yes','No','Cannot determine','Only some'],ans:0,exp:'Deductive logic: If A⊂B and B⊂C, then A⊂C. All Bloops are Lazzies.'},
-  ],
-  hard:[
-    {q:'You have 12 identical-looking coins. One is counterfeit (different weight — could be heavier or lighter). Using a balance scale with only 3 weighings, can you identify it?',opts:['Yes, always possible','Only if you know if it\'s heavier','No, impossible in 3 weighings','Only for 11 coins'],ans:0,exp:'This is the classic 12-coin problem. With 3 weighings on a balance scale, you can identify the odd coin AND determine if it is heavier or lighter among 12 coins using strategic grouping.'},
-    {q:'A bat and ball cost ₹110 in total. The bat costs ₹100 more than the ball. How much does the ball cost?',opts:['₹10','₹5','₹15','₹20'],ans:1,exp:'Intuition says ₹10 but that makes the bat ₹110 total. Correct: ball = x, bat = x+100. x + x+100 = 110 → 2x = 10 → x = ₹5.'},
-    {q:'What is the next term? 1, 11, 21, 1211, 111221, __',opts:['1112221','312211','211211','123221'],ans:1,exp:'This is the Look and Say sequence. You read the previous number aloud: "three 1s, two 2s, one 1" = 312211.'},
-    {q:'In a room are 3 switches controlling 3 bulbs in another room. You can only enter the bulb room once. How do you determine which switch controls which bulb?',opts:['Turn all 3 on, enter and guess','Turn on S1 for 10min, off. Turn on S2. Enter — on=S2, warm=S1, cold=S3','Not possible in one visit','Turn on one at a time and re-enter'],ans:1,exp:'Classic lateral thinking: heat as a third state. The warm-but-off bulb was controlled by the switch you turned on then off.'},
-    {q:'Which organelle is called the "powerhouse of the cell" and what is the approximate number of ATP molecules produced by complete oxidation of one glucose molecule?',opts:['Ribosome — 36 ATP','Mitochondria — 36-38 ATP','Chloroplast — 32 ATP','Nucleus — 38 ATP'],ans:1,exp:'Mitochondria produces ATP via oxidative phosphorylation. Complete oxidation of glucose yields approximately 36-38 ATP molecules (2 glycolysis + 2 Krebs + ~32-34 from ETC).'},
-  ]
+const $=s=>document.querySelector(s);
+const P={
+ folder:'<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2h7.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>',
+ compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+ note:'<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+ calc:'<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/>',
+ music:'<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+ image:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-9 9"/>',
+ term:'<path d="M5 8l4 4-4 4M12 16h7"/>',
+ sliders:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+ search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+ wifi:'<path d="M4.5 9.5a11 11 0 0 1 15 0M7.5 13a6.5 6.5 0 0 1 9 0M12 17h.01"/>',
+ battery:'<rect x="2.5" y="8" width="17" height="9" rx="2.5"/><path d="M22 11.5v2"/><rect x="4.5" y="10" width="10" height="5" rx="1" fill="currentColor" stroke="none"/>',
+ moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+ contrast:'<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>',
+ bt:'<path d="M7 7.5l10 9-5 4.5V3l5 4.5-10 9"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>',
+ vol:'<path d="M4 10v4h3.5L12 18V6L7.5 10z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
+ play:'<path d="M8 5.5v13l11-6.5z" fill="currentColor"/>',
+ pause:'<rect x="6.5" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/>',
+ next:'<path d="M6 6l9 6-9 6z" fill="currentColor"/><path d="M18 6v12"/>',
+ prev:'<path d="M18 6l-9 6 9 6z" fill="currentColor"/><path d="M6 6v12"/>',
+ home:'<path d="M4 11l8-7 8 7M6 10v10h12V10"/>',
+ clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+ dl:'<path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5 20h14"/>',
+ monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+ pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+ reload:'<path d="M19 12a7 7 0 1 1-2-5M19 4v4h-4"/>',
+ star:'<path d="M12 2c1 5 5 9 10 10-5 1-9 5-10 10-1-5-5-9-10-10 5-1 9-5 10-10z" fill="currentColor" stroke="none"/>'
 };
+const ic=(n,s=18,w=1.7)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+const wallpapers=['Dusk','Glacier','Graphite','Ember'].map((n,i)=>({n,c:'wp'+i}));
+const accents=['#0a84ff','#bf5af2','#ff375f','#ff9f0a','#30d158','#8e8e93'];
+let zTop=10,wins={},state={theme:'dark',wall:0,accent:0,pane:'appearance',active:null,
+ notes:[{b:'Welcome to Notes\nA quiet place for your thoughts.'},{b:'Reading list\nThe Design of Everyday Things\nThe Elements of Style'},{b:'Study plan\nMon: Statistics\nWed: Lab report\nFri: Group review'}],note:0};
 
-let puzzleState = { diff:'easy', idx:0, answered:false };
-
-function initPuzzle() { loadPuzzle(); }
-
-function setPuzzleDiff(d, btn) {
-  puzzleState.diff = d; puzzleState.idx = 0; puzzleState.answered = false;
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  loadPuzzle();
-}
-
-function loadPuzzle() {
-  const pool = PUZZLES[puzzleState.diff];
-  const dateNum = new Date().getDate();
-  const p = pool[(dateNum + puzzleState.idx) % pool.length];
-  document.getElementById('puzzle-question').textContent = p.q;
-  puzzleState.answered = false;
-  document.getElementById('puzzle-result').style.display = 'none';
-  const opts = document.getElementById('puzzle-options');
-  opts.innerHTML = p.opts.map((o,i) =>
-    `<button class="choice-btn" onclick="checkPuzzle(${i})">[${String.fromCharCode(65+i)}] ${o}</button>`
-  ).join('');
-  document.getElementById('puzzle-counter').textContent = `Puzzle ${puzzleState.idx+1} of ${pool.length}`;
-}
-
-function checkPuzzle(i) {
-  if (puzzleState.answered) return;
-  puzzleState.answered = true;
-  const pool = PUZZLES[puzzleState.diff];
-  const dateNum = new Date().getDate();
-  const p = pool[(dateNum + puzzleState.idx) % pool.length];
-  const res = document.getElementById('puzzle-result');
-  const correct = i === p.ans;
-  res.style.display = 'block';
-  res.style.borderLeft = `3px solid ${correct ? 'var(--green)' : 'var(--accent2)'}`;
-  res.innerHTML = (correct ? '✓ Correct! ' : '✗ Wrong. ') + p.exp;
-}
-
-function nextPuzzle() {
-  puzzleState.idx++;
-  puzzleState.answered = false;
-  loadPuzzle();
-}
-
-// ═══════════════════════════════════════════
-// RIDDLE
-// ═══════════════════════════════════════════
-const RIDDLES = {
-  easy:[
-    {q:'The more you take, the more you leave behind. What am I?',hint:'Think about walking.',a:'Footsteps',e:'Every step you take, you leave a footprint behind.'},
-    {q:'I have hands but cannot clap. What am I?',hint:'You check me many times a day.',a:'A clock',e:'A clock has hands (hour and minute) but cannot clap.'},
-    {q:'What has to be broken before you can use it?',hint:'You have it for breakfast.',a:'An egg',e:'You must crack an egg open before using it.'},
-    {q:'I am always in front of you but cannot be seen. What am I?',hint:'Think about time.',a:'The future',e:'The future is always ahead of you but invisible.'},
-    {q:'What gets wetter as it dries?',hint:'You use it after a bath.',a:'A towel',e:'A towel absorbs water (gets wetter) as it dries you.'},
-  ],
-  medium:[
-    {q:'I have cities, but no houses live there. I have mountains, but no trees grow. I have water, but no fish swim. I have roads, but no cars drive. What am I?',hint:'You use me for navigation.',a:'A map',e:'A map represents geography symbolically without the actual elements.'},
-    {q:'The person who makes it, sells it. The person who buys it never uses it. The person who uses it doesn\'t know they\'re using it. What is it?',hint:'Used for a final ceremony.',a:'A coffin',e:'The carpenter makes and sells it, the buyer purchases it for someone else, and the "user" is deceased.'},
-    {q:'I can fly without wings, cry without eyes. Wherever I go, darkness follows. What am I?',hint:'Look up on a sunny day.',a:'A cloud',e:'Clouds move through the sky, release rain ("cry"), and block sunlight causing darkness.'},
-    {q:'Forward I am heavy. Backwards I am not. What am I?',hint:'Think about the word itself.',a:'The word "ton"',e:'"Ton" forwards is a unit of weight. Backwards it spells "not" — which is light.'},
-    {q:'What has roots as nobody sees, is taller than trees, up, up goes it, and yet never grows?',hint:'Think about geography, not plants.',a:'A mountain',e:'From The Hobbit. Mountains have underground roots (base), tower over trees, reach high, but don\'t grow like living things.'},
-  ],
-  hard:[
-    {q:'A man looks at a photograph and says, "Brothers and sisters I have none, but that man\'s father is my father\'s son." Who is in the photograph?',hint:'Work backwards from "my father\'s son."',a:'His son',e:'"My father\'s son" with no siblings = himself. So "that man\'s father" = himself. Therefore the man in the photo is his own son.'},
-    {q:'I am not alive, but I grow. I don\'t have lungs, but I need air. I don\'t have a mouth, but water kills me. What am I?',hint:'Think chemistry, not biology.',a:'Fire',e:'Fire grows, requires oxygen (air), and is extinguished by water — yet is not a living organism.'},
-    {q:'You are in a dark room with a candle, a wood stove, and a gas lamp. You only have one match. Which do you light first?',hint:'The answer is simpler than the puzzle makes it seem.',a:'The match',e:'You must light the match first before lighting anything else.'},
-    {q:'What is so fragile that saying its name breaks it?',hint:'Think about acoustics.',a:'Silence',e:'The moment you say the word "silence," you break it.'},
-    {q:'I have 4 wings but cannot fly, I never laugh and never cry. On the same spot I\'m always found, toiling away with a turning round. What am I?',hint:'Think of something that works outdoors using wind.',a:'A windmill',e:'A windmill has four blades ("wings"), stays in place ("same spot"), and rotates ("turning round") but cannot fly or express emotion.'},
-  ]
+const APPS={
+ files:{n:'Files',i:'folder',c:'linear-gradient(160deg,#5eadff,#1f6fe0)',w:700,h:440},
+ browser:{n:'Browser',i:'compass',c:'linear-gradient(160deg,#54c8ff,#1667d0)',w:720,h:470},
+ notes:{n:'Notes',i:'note',c:'linear-gradient(160deg,#ffd66b,#f0a020)',w:640,h:430},
+ calc:{n:'Calculator',i:'calc',c:'linear-gradient(160deg,#4a4a50,#1c1c1e)',w:300,h:430},
+ music:{n:'Music',i:'music',c:'linear-gradient(160deg,#ff627f,#d62c52)',w:400,h:480},
+ photos:{n:'Photos',i:'image',c:'linear-gradient(160deg,#b98bff,#5b5bd6)',w:600,h:440},
+ term:{n:'Terminal',i:'term',c:'linear-gradient(160deg,#333338,#0a0a0b)',w:580,h:340},
+ settings:{n:'Settings',i:'sliders',c:'linear-gradient(160deg,#a3a3ac,#5e5e66)',w:640,h:440}
 };
+const GR=['#5b6bd6,#b27ad8','#2a9d8f,#264653','#f4a261,#e76f51','#3a6ea5,#8fb8de','#7b6cb0,#e0a0b8','#40736a,#a8c8a0','#c96a4a,#f0c080','#3b4290,#6e3f86','#5a6270,#a0a8b8','#8c4a6a,#e0907a','#2c5d87,#66b3c9','#a08040,#e8d090'];
 
-let riddleState = { diff:'easy', idx:0 };
+/* ---------- app builders ---------- */
+const build={
+files(b){
+ const sets={Recents:[['f','Essay','DOCX'],['f','Budget','XLSX'],['f','Trip','JPG']],
+  Documents:[['d','Coursework'],['f','Essay','DOCX'],['f','Textbook','PDF'],['f','Budget','XLSX'],['f','Notes','TXT']],
+  Downloads:[['f','Slides','PDF'],['f','Installer','ZIP'],['f','Wallpaper','PNG']],
+  Home:[['d','Documents'],['d','Downloads'],['d','Pictures'],['d','Music'],['f','Essay','DOCX'],['f','Song','MP3']]};
+ const fav=[['Home','home'],['Recents','clock'],['Documents','note'],['Downloads','dl']];
+ b.innerHTML=`<div class="split"><div class="side"><h6>Favorites</h6></div><div class="main"><div class="tool"><button class="ibtn">${ic('left',16)}</button><button class="ibtn">${ic('right',16)}</button><span class="ttl"></span></div><div class="grid"></div><div class="status"></div></div></div>`;
+ const side=b.querySelector('.side'),grid=b.querySelector('.grid');
+ const show=k=>{side.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));b.querySelector('.ttl').textContent=k;
+  grid.innerHTML=sets[k].map(f=>`<div class="fi"><div class="ico">${f[0]==='d'?'<svg width="56" height="46" viewBox="0 0 48 40"><path d="M2 8a4 4 0 0 1 4-4h11l4 4h21a4 4 0 0 1 4 4v22a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" fill="var(--accent)"/></svg>':`<div class="doc">${f[2]}</div>`}</div><div class="lb">${f[1]}</div></div>`).join('');
+  b.querySelector('.status').textContent=sets[k].length+' items';
+  grid.querySelectorAll('.fi').forEach(el=>el.onclick=()=>{grid.querySelectorAll('.fi').forEach(x=>x.classList.remove('sel'));el.classList.add('sel')})};
+ fav.forEach(([k,i])=>{const bt=document.createElement('button');bt.dataset.k=k;bt.innerHTML=ic(i,16)+k;bt.onclick=()=>show(k);side.appendChild(bt)});
+ show('Home');
+},
+notes(b){
+ b.innerHTML=`<div class="split"><div class="nl"><div class="tool"><span class="sp"></span><button class="ibtn" id="nn" title="New note" style="color:var(--text)">${ic('pen',16)}</button></div><div class="list"></div></div><div class="main"><textarea class="ed" placeholder="Start writing"></textarea></div></div>`;
+ const list=b.querySelector('.list'),ed=b.querySelector('.ed');
+ const draw=()=>{list.innerHTML='';state.notes.forEach((n,i)=>{const l=n.b.split('\n'),bt=document.createElement('button');bt.className='ni'+(i===state.note?' on':'');
+  bt.innerHTML=`<b>${(l[0]||'New note').replace(/</g,'&lt;')}</b><span class="dim">${(l[1]||'No additional text').replace(/</g,'&lt;')}</span>`;
+  bt.onclick=()=>{state.note=i;ed.value=n.b;draw()};list.appendChild(bt)})};
+ ed.value=state.notes[state.note].b;
+ ed.oninput=()=>{state.notes[state.note].b=ed.value;draw()};
+ b.querySelector('#nn').onclick=()=>{state.notes.unshift({b:''});state.note=0;ed.value='';draw();ed.focus()};
+ draw();
+},
+calc(b){
+ b.innerHTML='<div class="calc"><div class="d">0</div><div class="keys"></div></div>';
+ const d=b.querySelector('.d'),keys=b.querySelector('.keys');
+ let cur='0',prev=null,op=null,fresh=false;
+ const fmt=s=>{if(s==='Error'||s.includes('e'))return s;const[i,f]=s.split('.');return(i==='-0'?'-0':Number(i).toLocaleString('en-US'))+(f!==undefined?'.'+f:'')};
+ const draw=()=>{d.textContent=fmt(cur);d.style.fontSize=cur.length>12?'30px':cur.length>8?'40px':'56px'};
+ const calc=()=>{const a=prev,c=parseFloat(cur);let r=c;if(op==='÷')r=c===0?NaN:a/c;if(op==='×')r=a*c;if(op==='−')r=a-c;if(op==='+')r=a+c;cur=isNaN(r)?'Error':String(+r.toPrecision(12))};
+ const K=[['AC','f'],['±','f'],['%','f'],['÷','o'],['7'],['8'],['9'],['×','o'],['4'],['5'],['6'],['−','o'],['1'],['2'],['3'],['+','o'],['0','z'],['.'],['=','o']];
+ K.forEach(([k,c])=>{const bt=document.createElement('button');bt.textContent=k;bt.className=c||'';
+  bt.onclick=()=>{
+   if(/\d/.test(k)){cur=(fresh||cur==='0'||cur==='Error')?k:cur+k;fresh=false}
+   else if(k==='.'){if(fresh){cur='0.';fresh=false}else if(!cur.includes('.'))cur+='.'}
+   else if(k==='AC'){cur='0';prev=null;op=null;fresh=false}
+   else if(k==='±'&&cur!=='Error')cur=String(-parseFloat(cur));
+   else if(k==='%'&&cur!=='Error')cur=String(parseFloat(cur)/100);
+   else if(k==='='){if(op&&prev!==null){calc();op=null;prev=null;fresh=true}}
+   else if('÷×−+'.includes(k)){if(op&&!fresh)calc();prev=parseFloat(cur);op=k;fresh=true}
+   draw()};keys.appendChild(bt)});
+},
+browser(b){
+ const fav=[['N','News','#ff453a'],['V','Video','#bf5af2'],['M','Mail','#0a84ff'],['P','Maps','#30d158'],['S','Shop','#ff9f0a'],['L','Library','#5e5ce6'],['C','Chat','#64d2ff'],['G','Games','#ff375f']];
+ b.innerHTML=`<div style="display:flex;flex-direction:column;height:100%"><div class="tool" style="border:0;padding-bottom:6px"><button class="ibtn">${ic('left',16)}</button><button class="ibtn">${ic('right',16)}</button><div class="pill" style="flex:1;max-width:440px;margin:0 auto;background:var(--glass2);border-radius:8px;height:28px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--dim);font-weight:400">${ic('lock',13)}<span>Search or enter website name</span></div><button class="ibtn">${ic('reload',15)}</button></div>
+ <div class="bstart" style="border-top:.5px solid var(--line);flex:1"><h2>Favorites</h2><div class="dim">Pick a site to get started</div><div class="fav">${fav.map(f=>`<button><i style="background:${f[2]}">${f[0]}</i>${f[1]}</button>`).join('')}</div><p class="dim" style="margin-top:38px;font-size:11.5px">Demo browser. Sites don't load, but the interface is real.</p></div></div>`;
+ b.querySelectorAll('.fav button').forEach(t=>t.onclick=()=>toast('Browser','Opening '+t.textContent+' is not available in this demo','browser'));
+},
+music(b){
+ const T=[['Slow Tide','Harbor Lights','linear-gradient(135deg,#2a9d8f,#264653)',192],['Night Signal','Meridian','linear-gradient(135deg,#3b4290,#b27ad8)',215],['Amber Field','Golden Hour','linear-gradient(135deg,#f4a261,#8c4a6a)',178]];
+ let i=0,on=false,p=0,iv;
+ b.innerHTML=`<div class="music"><div class="art"></div><div class="mt"><b class="tt"></b><span class="dim ta"></span></div><div class="bar"><span class="c">0:00</span><div class="tr"><div></div></div><span class="e"></span></div><div class="ctl"><button class="pv">${ic('prev',26)}</button><button class="pp">${ic('play',34)}</button><button class="nx">${ic('next',26)}</button></div></div>`;
+ const m=b.querySelector('.music');
+ const tm=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+ const set=()=>{const t=T[i];m.querySelector('.art').style.background=t[2];m.querySelector('.tt').textContent=t[0];m.querySelector('.ta').textContent=t[1];m.querySelector('.e').textContent=tm(t[3]);p=0;m.querySelector('.tr div').style.width='0';m.querySelector('.c').textContent='0:00'};
+ const tick=()=>{p++;if(p>=T[i][3]){i=(i+1)%T.length;set()}m.querySelector('.tr div').style.width=(p/T[i][3]*100)+'%';m.querySelector('.c').textContent=tm(p)};
+ const pl=v=>{on=v;m.querySelector('.pp').innerHTML=ic(on?'pause':'play',34);clearInterval(iv);if(on)iv=setInterval(tick,1000)};
+ m.querySelector('.pp').onclick=()=>pl(!on);
+ m.querySelector('.nx').onclick=()=>{i=(i+1)%T.length;set()};m.querySelector('.pv').onclick=()=>{i=(i+T.length-1)%T.length;set()};
+ b.closest('.win').onclose=()=>clearInterval(iv);set();
+},
+photos(b){
+ b.innerHTML='<div class="ph"></div>';const g=b.querySelector('.ph');
+ GR.forEach(x=>{const t=document.createElement('button');t.style.background=`linear-gradient(135deg,${x})`;
+  t.onclick=()=>{const v=document.createElement('div');v.className='view';v.innerHTML=`<div class="top"><button class="bk">Back</button><button class="sw2">Set as wallpaper</button></div><div class="im" style="background:linear-gradient(135deg,${x})"></div>`;
+   v.querySelector('.bk').onclick=()=>v.remove();
+   v.querySelector('.sw2').onclick=()=>{state.wall=-1;const w=$('#wall');w.className='';w.style.background=`linear-gradient(135deg,${x})`;toast('Photos','Wallpaper updated','photos')};b.appendChild(v)};g.appendChild(t)});
+},
+term(b){
+ b.innerHTML='<div class="term"><div class="dim">Aurora Terminal. Type <b>help</b> to begin.</div><div class="out"></div><div><span class="p">student@aurora ~ %</span> <input spellcheck="false"></div></div>';
+ const t=b.querySelector('.term'),out=b.querySelector('.out'),inp=b.querySelector('input');
+ const esc=s=>String(s).replace(/</g,'&lt;');
+ const cmds={help:()=>'help  date  whoami  neofetch  theme dark|light  echo  clear',
+  date:()=>new Date().toString(),whoami:()=>'student',
+  neofetch:()=>'student@aurora\n--------------\nOS       Aurora 1.0\nShell    aurash\nMemory   8 GB\nTheme    '+state.theme,
+  theme:a=>{setTheme(a==='light'?'light':'dark');return 'Theme set to '+state.theme},echo:a=>a};
+ t.onclick=()=>inp.focus();
+ inp.onkeydown=e=>{if(e.key!=='Enter')return;const v=inp.value.trim(),[c,...r]=v.split(' ');
+  out.innerHTML+=`<div><span class="p">student@aurora ~ %</span> ${esc(v)}</div>`;
+  if(c==='clear')out.innerHTML='';else if(cmds[c])out.innerHTML+=`<div style="white-space:pre-wrap">${esc(cmds[c](r.join(' ')))}</div>`;
+  else if(c)out.innerHTML+=`<div>zsh: command not found: ${esc(c)}</div>`;
+  inp.value='';t.scrollTop=t.scrollHeight};
+ setTimeout(()=>inp.focus(),50);
+},
+settings(b){
+ const w=b.closest('.win');
+ const nav=[['appearance','Appearance','contrast'],['wallpaper','Wallpaper','image'],['about','About','monitor']];
+ b.innerHTML='<div class="split"><div class="side"></div><div class="pane"></div></div>';
+ const side=b.querySelector('.side'),pane=b.querySelector('.pane');
+ const draw=()=>{
+  side.innerHTML=nav.map(n=>`<button data-p="${n[0]}" class="${state.pane===n[0]?'on':''}">${ic(n[2],16)}${n[1]}</button>`).join('');
+  side.querySelectorAll('button').forEach(x=>x.onclick=()=>{state.pane=x.dataset.p;draw()});
+  if(state.pane==='appearance')pane.innerHTML=`<h3>Appearance</h3><div>${['dark','light'].map(t=>`<button class="thm ${state.theme===t?'on':''}" data-t="${t}"><i style="background:${t==='dark'?'linear-gradient(#2b2b30 30%,#1a1a1d 30%)':'linear-gradient(#f1f1f4 30%,#fff 30%)'}"></i><span>${t==='dark'?'Dark':'Light'}</span></button>`).join('')}</div><h4>Accent color</h4><div style="display:flex">${accents.map((c,i)=>`<button class="sw ${state.accent===i?'on':''}" data-a="${i}" style="background:${c}"></button>`).join('')}</div>`;
+  if(state.pane==='wallpaper')pane.innerHTML=`<h3>Wallpaper</h3><div class="wg">${wallpapers.map((x,i)=>`<button class="${state.wall===i?'on':''}" data-w="${i}"><i class="${x.c}"></i>${x.n}</button>`).join('')}</div>`;
+  if(state.pane==='about')pane.innerHTML=`<h3>About</h3><div class="grp"><div><span>Name</span><span class="dim">Aurora OS</span></div><div><span>Version</span><span class="dim">1.0</span></div><div><span>Device</span><span class="dim">Laptop</span></div><div><span>Memory</span><span class="dim">8 GB</span></div></div>`;
+  pane.querySelectorAll('[data-t]').forEach(x=>x.onclick=()=>{setTheme(x.dataset.t);draw()});
+  pane.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{setAccent(+x.dataset.a);draw()});
+  pane.querySelectorAll('[data-w]').forEach(x=>x.onclick=()=>{setWall(+x.dataset.w);draw()});
+ };
+ w.rerender=draw;draw();
+}};
 
-function initRiddle() { loadRiddle(); }
-function setRiddleDiff(d, btn) {
-  riddleState.diff = d; riddleState.idx = 0;
-  document.querySelectorAll('#page-riddle .diff-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  loadRiddle();
-}
-function loadRiddle() {
-  const pool = RIDDLES[riddleState.diff];
-  const r = pool[riddleState.idx % pool.length];
-  document.getElementById('riddle-q').textContent = r.q;
-  document.getElementById('riddle-hint').textContent = '💡 Hint: ' + r.hint;
-  document.getElementById('riddle-hint').classList.remove('show');
-  document.getElementById('riddle-answer').classList.remove('show');
-  document.getElementById('riddle-answer-text').textContent = r.a;
-  document.getElementById('riddle-explain').textContent = r.e;
-}
-function showRiddleHint() { document.getElementById('riddle-hint').classList.add('show'); }
-function revealRiddle() {
-  document.getElementById('riddle-answer').classList.add('show');
-  document.getElementById('riddle-hint').classList.add('show');
-}
-function nextRiddle() { riddleState.idx++; loadRiddle(); }
+/* ---------- setters ---------- */
+function setTheme(t){state.theme=t;document.body.classList.toggle('light',t==='light');const on=t==='dark';$('#tDark').classList.toggle('on',on);$('#tDark span:last-child').textContent=on?'On':'Off';if(wins.settings&&wins.settings.rerender)wins.settings.rerender()}
+function setAccent(i){state.accent=i;document.documentElement.style.setProperty('--accent',accents[i])}
+function setWall(i){state.wall=i;const w=$('#wall');w.style.background='';w.className=wallpapers[i].c}
 
-// ═══════════════════════════════════════════
-// ROAST
-// ═══════════════════════════════════════════
-const ROASTS = {
-  student:[
-    {text:"You've studied for exams the same way I've seen people 'start their diet on Monday' for three years — great in theory, spectacular failure in practice. Your notes are colour-coded and your future isn't.", verdict:"AESTHETICALLY PREPARED, ACADEMICALLY COOKED"},
-    {text:"You have seventeen tabs open, four highlighter colours, and a study timetable that belongs in a museum. You have not opened the actual textbook since September.", verdict:"MASTER OF PREPARATION, APPRENTICE OF STUDYING"},
-    {text:"Your NCERT textbook has creases on exactly three pages: the cover, the syllabus, and the page you accidentally sat on.", verdict:"BOOKMARKED THE WRONG LIFE"},
-  ],
-  neet:[
-    {text:"You're preparing for NEET with the same energy a person uses to 'learn guitar' — intense for two weeks, then the guitar gets moved under the bed. Except the bed is your mock test scores.", verdict:"ASPIRANT WITH EXPIRED ASPIRATION"},
-    {text:"550 mock test score, 700 expected by exam day, currently on a 4-game Alien: Isolation streak. The mitochondria is the powerhouse of the cell. That's all you retained.", verdict:"BIOLOGY ENJOYER, BIOCHEMISTRY AVOIDER"},
-    {text:"You know the name of every rare coin minted before 1960 but cannot name the steps of the urea cycle. The body's nitrogen disposal is apparently less interesting than dead emperors.", verdict:"SELECTIVELY ENCYCLOPAEDIC"},
-  ],
-  coder:[
-    {text:"Your GitHub has 23 repositories. 22 are named 'test', 'project1', and 'final_FINAL_v3'. The 23rd is actually good but you haven't touched it since the initial commit.", verdict:"SERIAL INITIALISER, ZERO FINISHER"},
-    {text:"You call yourself a developer but your most-used tool is Ctrl+Z. Your code works on your machine, which is why it will stay on your machine.", verdict:"LOCAL ENVIRONMENT CHAMPION"},
-    {text:"You built a multi-app platform with six tools, a router, animated background, and gold colour scheme. Then spent four hours choosing a font. The font is fine. The irony is not.", verdict:"SPENT 80% TIME ON 20% PROBLEM"},
-  ],
-  gamer:[
-    {text:"You bought a game, tried it for free first, then bought it again after deciding you liked it. That's not gaming, that's a procurement process. You have a career in vendor evaluation.", verdict:"DUE DILIGENCE GAMER"},
-    {text:"You play horror games at night, complain about no sleep, and then wonder why the NEET mock at 9am felt like a nightmare you couldn't pause.", verdict:"SELF-INFLICTED DIFFICULTY MODE"},
-    {text:"You game at night, study in theory, and tell yourself tomorrow will be different. Tomorrow has been coming since Class 11. It's a very slow fast travel.", verdict:"SPAWNED AT THE WRONG CHECKPOINT"},
-  ],
-  overthinker:[
-    {text:"You've analysed 14 possible outcomes of a conversation that hasn't happened yet, prepared rebuttals for 6 of them, and the other person is just going to say 'okay' and move on.", verdict:"FULLY PREPARED FOR THE WRONG BATTLEFIELD"},
-    {text:"You don't make decisions, you conduct internal committee meetings. The committee always reaches a conclusion at 2am that reverses itself by morning.", verdict:"SELF-GOVERNING INDECISION ENGINE"},
-    {text:"Your brain treats every minor social interaction as a cold case to be reviewed annually. You are still reconstructing a sentence you said in 2019.", verdict:"FORENSIC ANALYST OF OWN EMBARRASSMENTS"},
-  ],
-  collector:[
-    {text:"You can identify a 1950 Republic India anna by weight and finish but cannot identify what you ate for lunch. Your priorities are historically accurate if nothing else.", verdict:"NUMISMATICALLY ADVANCED, CALORICALLY UNAWARE"},
-    {text:"You own coins that survived two world wars, three currency reforms, and four colonial handovers. Meanwhile your phone charger lasts eight months.", verdict:"CURATOR OF THE DURABLE, USER OF THE FRAGILE"},
-    {text:"You have rare commemorative coins from six different nations stored more carefully than your actual study notes. The coins will appreciate in value. The notes will not.", verdict:"INVESTED IN EVERYTHING EXCEPT THE EXAM"},
-  ],
-  insomniac:[
-    {text:"Your sleep schedule isn't a schedule — it's a hostage negotiation where both parties are you and neither wins. The sun rises before you sleep and sets before you wake.", verdict:"OPERATING IN A TIMEZONE OF YOUR OWN"},
-    {text:"You've seen 3am more times this month than you've seen the inside of your textbook. The darkness knows you personally. It's concerned.", verdict:"REGULAR VISITOR OF UNREASONABLE HOURS"},
-    {text:"You tell yourself you'll sleep early tonight. You have told yourself this 47 consecutive nights. The streak is more consistent than your studying.", verdict:"CHRONICALLY OPTIMISTIC ABOUT SLEEP"},
-  ],
-  dreamer:[
-    {text:"Your ideas are genuinely impressive. Your execution speed is geologically slow. You have plans that require carbon dating to determine when they started.", verdict:"VISIONARY ON INDEFINITE HOLD"},
-    {text:"You've imagined the outcome so vividly that your brain has partially convinced itself the work is done. It is not done. It has not started.", verdict:"CONFUSING VISUALISATION WITH COMPLETION"},
-    {text:"Big dreams, excellent taste, catastrophic follow-through. You're the pilot episode of a show that never got renewed.", verdict:"CRITICALLY ACCLAIMED, CANCELLED AFTER ONE EPISODE"},
-  ]
+/* ---------- windows ---------- */
+function openApp(id,opt={}){
+ if(wins[id]){const w=wins[id];w.classList.remove('min');if(opt.pane){state.pane=opt.pane;w.rerender&&w.rerender()}focus(w);return}
+ if(opt.pane)state.pane=opt.pane;
+ const a=APPS[id],w=document.createElement('div'),n=Object.keys(wins).length;
+ w.className='win blur';
+ const W=Math.min(a.w,innerWidth-24),H=Math.min(a.h,innerHeight-120);
+ w.style.width=W+'px';w.style.height=H+'px';
+ w.style.left=Math.max(12,(innerWidth-W)/2-60+n*30)+'px';w.style.top=Math.max(40,(innerHeight-H)/2-40+n*30)+'px';
+ w.innerHTML=`<div class="tb"><div class="lights"><i data-a="x"><svg viewBox="0 0 8 8" stroke="currentColor" stroke-width="1.3" fill="none"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5"/></svg></i><i data-a="m"><svg viewBox="0 0 8 8" stroke="currentColor" stroke-width="1.3" fill="none"><path d="M1.2 4h5.6"/></svg></i><i data-a="z"><svg viewBox="0 0 8 8" stroke="currentColor" stroke-width="1.3" fill="none"><path d="M4 1.2v5.6M1.2 4h5.6"/></svg></i></div>${a.n}</div><div class="body"></div>`;
+ document.body.appendChild(w);wins[id]=w;w.dataset.id=id;
+ build[id](w.querySelector('.body'));
+ w.querySelector('.lights').onclick=e=>{const k=e.target.closest('i');if(!k)return;const c=k.dataset.a;if(c==='x')closeWin(id);if(c==='m')minWin(id);if(c==='z')w.classList.toggle('max')};
+ w.querySelector('.tb').ondblclick=e=>{if(!e.target.closest('.lights'))w.classList.toggle('max')};
+ drag(w);w.addEventListener('pointerdown',()=>focus(w));focus(w);
+}
+function closeWin(id){const w=wins[id];if(!w)return;if(w.onclose)w.onclose();w.remove();delete wins[id];updateDock();nextFocus()}
+function minWin(id){const w=wins[id];if(!w)return;w.classList.add('min');updateDock();nextFocus()}
+function focus(w){w.style.zIndex=++zTop;document.querySelectorAll('.win').forEach(x=>x.classList.toggle('active',x===w));state.active=w.dataset.id;setAppName();updateDock()}
+function nextFocus(){const v=Object.values(wins).filter(w=>!w.classList.contains('min')).sort((a,b)=>a.style.zIndex-b.style.zIndex).pop();if(v)focus(v);else{state.active=null;setAppName()}}
+function setAppName(){$('#appn').textContent=state.active?APPS[state.active].n:'Desktop'}
+function drag(w){
+ const tb=w.querySelector('.tb');
+ tb.onpointerdown=e=>{if(e.target.closest('.lights')||w.classList.contains('max'))return;
+  const dx=e.clientX-w.offsetLeft,dy=e.clientY-w.offsetTop;tb.setPointerCapture(e.pointerId);
+  tb.onpointermove=m=>{w.style.left=Math.min(innerWidth-90,Math.max(-w.offsetWidth+120,m.clientX-dx))+'px';w.style.top=Math.min(innerHeight-40,Math.max(28,m.clientY-dy))+'px'};
+  tb.onpointerup=()=>{tb.onpointermove=null}};
+}
+
+/* ---------- dock with magnification ---------- */
+const dock=$('#dock');
+Object.entries(APPS).forEach(([id,a])=>{const b=document.createElement('button');b.className='dk';b.dataset.n=a.n;b.dataset.id=id;b.style.background=a.c;b.innerHTML=ic(a.i,28,1.6);b.onclick=()=>openApp(id);dock.appendChild(b)});
+dock.onmousemove=e=>{dock.classList.add('hov');dock.querySelectorAll('.dk').forEach(b=>{const r=b.getBoundingClientRect(),d=Math.abs(e.clientX-(r.left+r.width/2)),s=Math.max(0,1-d/130);b.style.width=b.style.height=(50+s*s*30)+'px'})};
+dock.onmouseleave=()=>{dock.classList.remove('hov');dock.querySelectorAll('.dk').forEach(b=>{b.style.width=b.style.height=''})};
+function updateDock(){dock.querySelectorAll('.dk').forEach(b=>b.classList.toggle('run',!!wins[b.dataset.id]))}
+
+/* ---------- menu bar ---------- */
+const MENUS={
+ aurora:[['About Aurora OS',()=>openApp('settings',{pane:'about'})],['System Settings',()=>openApp('settings')],'-',['Lock Screen',()=>lock(),'Ctrl L']],
+ File:[['Close Window',()=>state.active&&closeWin(state.active),'Ctrl W']],
+ Edit:[['Undo',null,'Ctrl Z'],['Redo',null,'Ctrl Y'],'-',['Copy',null,'Ctrl C'],['Paste',null,'Ctrl V']],
+ View:[['Enter Full Screen',()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen(),'F11'],['Toggle Dark Mode',()=>setTheme(state.theme==='dark'?'light':'dark')]],
+ Window:[['Minimize',()=>state.active&&minWin(state.active)],['Zoom',()=>state.active&&wins[state.active].classList.toggle('max')]],
+ Help:[['Search',()=>spot(true),'Ctrl Space']]
 };
-
-let lastRoastType = '';
-let lastRoastIdx = -1;
-
-function initRoast() {}
-function generateRoast() {
-  const type = document.getElementById('roast-type').value;
-  const pool = ROASTS[type];
-  let idx = Math.floor(Math.random() * pool.length);
-  if (idx === lastRoastIdx && type === lastRoastType) idx = (idx+1) % pool.length;
-  lastRoastIdx = idx; lastRoastType = type;
-  const r = pool[idx];
-  document.getElementById('roast-output-area').style.display = 'block';
-  document.getElementById('roast-text').textContent = r.text;
-  document.getElementById('roast-verdict').textContent = '⚡ VERDICT: ' + r.verdict;
+$('#lbar').innerHTML=`<button class="mi" data-m="aurora">${ic('star',15)}</button><button class="mi b" id="appn">Desktop</button>`+['File','Edit','View','Window','Help'].map(m=>`<button class="mi" data-m="${m}">${m}</button>`).join('');
+$('#appn').onclick=e=>e.stopPropagation();
+$('#rbar').innerHTML=`<button class="mi" id="bSearch">${ic('search',15)}</button><button class="mi" id="wifiI">${ic('wifi',16)}</button><span class="mi">${ic('battery',18)}</span><button class="mi" id="ccBtn">${ic('sliders',16)}</button><span class="mi" id="clk"></span>`;
+let menuOpen=null;
+function showMenu(name,btn){
+ const m=$('#menu');if(menuOpen===name){closeMenu();return}
+ closePanels();menuOpen=name;
+ m.innerHTML='';MENUS[name].forEach(it=>{if(it==='-'){m.appendChild(document.createElement('hr'));return}
+  const b=document.createElement('button');b.innerHTML=`<span>${it[0]}</span><span class="k">${it[2]||''}</span>`;if(!it[1])b.disabled=true;else b.onclick=()=>{closeMenu();it[1]()};m.appendChild(b)});
+ m.style.left=btn.getBoundingClientRect().left+'px';m.style.display='block';
+ document.querySelectorAll('#lbar .mi').forEach(x=>x.classList.toggle('on',x===btn));
 }
+function closeMenu(){menuOpen=null;$('#menu').style.display='none';document.querySelectorAll('#lbar .mi').forEach(x=>x.classList.remove('on'))}
+document.querySelectorAll('#lbar [data-m]').forEach(b=>{b.onclick=e=>{e.stopPropagation();showMenu(b.dataset.m,b)};b.onmouseenter=()=>{if(menuOpen&&menuOpen!==b.dataset.m){menuOpen=null;showMenu(b.dataset.m,b)}}});
+function closePanels(){$('#cc').classList.remove('show');$('#spot').classList.remove('show');closeMenu()}
 
-// ═══════════════════════════════════════════
-// SCIENCE
-// ═══════════════════════════════════════════
-const SCIENCE_FACTS = [
-  {cat:'biology',title:'You are more bacteria than human',body:'Your body contains approximately 38 trillion bacteria compared to 30 trillion human cells. By cell count, you are technically a minority in your own body.',deep:'Most of these bacteria live in your gut. They collectively weigh about 1-2kg and perform functions your own cells cannot — including synthesising vitamin K2 and regulating mood via the gut-brain axis.',wow:88},
-  {cat:'physics',title:'Time moves slower near massive objects',body:'This is gravitational time dilation — proven by Einstein\'s General Relativity. GPS satellites must account for this or your navigation would drift by kilometres per day.',deep:'The GPS satellite clocks tick about 38 microseconds faster per day than clocks on Earth\'s surface (due to weaker gravity at altitude minus a smaller effect from orbital speed). Without correction, maps would be useless within hours.',wow:95},
-  {cat:'space',title:'The Sun\'s light is 170,000 years old',body:'The photons arriving at your eyes right now were generated in the Sun\'s core ~170,000 years ago. It took that long to travel from core to surface — the final 8-minute journey to Earth is the easy part.',deep:'The interior of the Sun is so dense that photons constantly collide with particles in a "random walk." A photon might travel only a few millimetres before being absorbed and re-emitted. 170,000 years of this before reaching open space.',wow:97},
-  {cat:'chemistry',title:'Water is a terrible solvent — but life depends on it',body:'Water is called the "universal solvent" but it actually cannot dissolve most organic compounds. What makes it special is its polarity — it dissolves ionic and polar substances selectively, which is exactly what living chemistry needs.',deep:'The partial charges on water molecules (δ+ on H, δ- on O) allow it to surround ions and polar molecules, pulling them apart. This selectivity means biochemical reactions can happen in solution without everything dissolving into chaos.',wow:82},
-  {cat:'mind',title:'Your brain rewrites your memories every time you recall them',body:'Memory is not a recording — it is a reconstruction. Each time you remember something, you are rebuilding it from fragments, and in doing so, you can alter it. The act of remembering changes the memory.',deep:'This is called memory reconsolidation. Experiments have shown that people can be made to falsely remember entire events that never happened with surprising ease. Eyewitness testimony is notoriously unreliable for this reason. Your most confident memories may be the most modified.',wow:93},
-  {cat:'physics',title:'Most of an atom is empty space',body:'If an atom were the size of a football stadium, the nucleus would be a marble at the centre and the electrons would be specks orbiting near the outer walls. Everything else — the vast majority — is nothing.',deep:'The "nothing" isn\'t truly empty — it\'s a region of electron probability fields. But in classical terms, the nucleus contains 99.97% of the atom\'s mass in about one-trillionth of its volume. You are mostly empty space reading this.',wow:91},
-  {cat:'biology',title:'The appendix is not useless — it\'s a bacterial reserve',body:'The appendix was long considered an evolutionary leftover with no function. Recent research suggests it serves as a "safe house" for beneficial gut bacteria, repopulating the gut after illness.',deep:'The appendix\'s structure — a narrow tube with relatively low flow — makes it a protected reservoir. After severe diarrhoea or illness wipes out gut flora, bacteria from the appendix help recolonise the digestive tract. It also contains lymphoid tissue involved in immune response.',wow:79},
-  {cat:'space',title:'There are more stars than grains of sand on all Earth\'s beaches',body:'The observable universe contains an estimated 2 trillion galaxies, each averaging 100 billion stars. That\'s roughly 2×10²³ stars — more than the estimated 7.5×10¹⁸ grains of sand on all of Earth\'s beaches.',deep:'This comparison breaks human intuition. Standing on a beach holding a handful of sand, each grain represents a star that could have planets orbiting it. And we\'ve only mapped the observable universe — beyond that, we have no idea.',wow:99},
-  {cat:'chemistry',title:'The human body contains enough carbon to make 900 pencils',body:'Carbon is the backbone of all organic life. Your body is approximately 18% carbon by mass — for a 60kg person, that\'s about 10.8kg of carbon, equivalent to roughly 900 pencil leads.',deep:'Carbon\'s unique ability to form four covalent bonds simultaneously allows it to create chains, rings, and complex 3D structures — the basis of every protein, fat, and DNA molecule in your body. No other element has this versatility.',wow:75},
-  {cat:'mind',title:'Decision fatigue is real and measurable',body:'The quality of decisions degrades over a day. Israeli judges were shown to grant parole more frequently early in the day and after breaks — and far less frequently before meals. The brain, like a muscle, tires.',deep:'This has direct implications for when you study and when you make important choices. Willpower appears to be a limited resource drawing on glucose. Scheduling demanding cognitive work in the morning, and avoiding major decisions when depleted, is evidence-backed strategy.',wow:86},
-  {cat:'biology',title:'Your DNA is 99.9% identical to every human alive',body:'Only 0.1% of your genome differs from any other human on Earth. The genetic variation between the most different humans is smaller than the variation between two chimpanzee populations in the same forest.',deep:'That 0.1% — about 3 million base pairs — is what accounts for all physical variation, disease susceptibility, and some behavioural traits. It also means every racist ideology is built on a 0.1% difference that is itself mostly non-coding.',wow:90},
-  {cat:'physics',title:'Quantum particles exist in multiple states until observed',body:'Quantum superposition means a particle like an electron genuinely exists in multiple states simultaneously — not just "we don\'t know which state," but actually both — until measurement forces it to choose one.',deep:'Schrödinger\'s Cat is the famous thought experiment illustrating how absurd this becomes at large scales. The Copenhagen interpretation says the act of observation collapses the wavefunction. The many-worlds interpretation says all outcomes happen in branching universes. Neither is provably wrong.',wow:98},
-];
-
-let sciState = { cat:'all', idx:0 };
-
-function initScience() { loadFact(); }
-function setSciCat(c, btn) {
-  sciState.cat = c; sciState.idx = 0;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  loadFact();
+/* ---------- spotlight ---------- */
+const ACTS=[['Toggle Dark Mode','contrast',()=>setTheme(state.theme==='dark'?'light':'dark')],['Next Wallpaper','image',()=>setWall((state.wall+1+4)%4)],['Lock Screen','lock',()=>lock()]];
+function spot(open){closePanels();$('#spot').classList.toggle('show',open);if(open){$('#q').value='';$('#q').focus();renderRes('')}}
+function renderRes(q){
+ q=q.toLowerCase();const r=$('#res');r.innerHTML='';
+ const items=[...Object.entries(APPS).map(([id,a])=>[a.n,a.i,()=>openApp(id),a.c]),...ACTS].filter(x=>x[0].toLowerCase().includes(q));
+ items.forEach((x,i)=>{const b=document.createElement('button');if(i===0)b.className='on';b.innerHTML=`<span class="mini" style="background:${x[3]||'#636366'}">${ic(x[1],16)}</span>${x[0]}`;b.onclick=()=>{spot(false);x[2]()};r.appendChild(b)});
+ if(!items.length)r.innerHTML='<div class="dim" style="padding:12px">No results</div>';
 }
-function loadFact() {
-  const pool = sciState.cat === 'all' ? SCIENCE_FACTS : SCIENCE_FACTS.filter(f => f.cat === sciState.cat);
-  if (!pool.length) return;
-  const f = pool[sciState.idx % pool.length];
-  document.getElementById('sci-cat-label').textContent = 'Category · ' + f.cat.charAt(0).toUpperCase()+f.cat.slice(1);
-  document.getElementById('sci-title').textContent = f.title;
-  document.getElementById('sci-body').textContent = f.body;
-  document.getElementById('sci-deep').textContent = f.deep;
-  document.getElementById('sci-wow').style.width = f.wow + '%';
-}
-function nextFact() { sciState.idx++; loadFact(); }
+$('#q').oninput=e=>renderRes(e.target.value);
+$('#q').onkeydown=e=>{if(e.key==='Enter'){const f=$('#res button');if(f)f.click()}};
+$('#bSearch').onclick=e=>{e.stopPropagation();spot(!$('#spot').classList.contains('show'))};
 
-// ═══════════════════════════════════════════
-// COINS
-// ═══════════════════════════════════════════
-const COIN_INFO = [
-  {year:'1950', name:'First Republic India Coins', desc:'The first coins minted after India became a Republic. Featured the Lion Capital of Ashoka. Anna denominations (1, 2, 4, 8 Annas). Extremely sought after in uncirculated condition.', rarity:'rare'},
-  {year:'1885', name:'Victoria Empress Rupee', desc:'Minted under Queen Victoria after the Indian Rebellion of 1857. "Empress of India" title first used. Calcutta and Bombay mint marks. Condition is everything — a VF specimen commands premium.', rarity:'rare'},
-  {year:'1969', name:'Gandhi Centenary 20 Paise', desc:'Issued for the centenary of Mahatma Gandhi\'s birth. One of the earliest commemorative coins of independent India. Relatively accessible but high-grade pieces are scarce.', rarity:'uncommon'},
-  {year:'1974', name:'FAO Coin Series', desc:'India issued several coins for the UN Food and Agriculture Organisation. The 1974 50 Paise is particularly interesting for its design. Often found in collections but full sets are rare.', rarity:'uncommon'},
-  {year:'1612', name:'Jahangir Zodiac Series (Mughal)', desc:'Emperor Jahangir issued coins with his image and zodiac signs — unprecedented in Islamic coinage tradition. Extremely rare. Museum-grade pieces fetch crores at auction.', rarity:'legendary'},
-  {year:'1893', name:'Morgan Dollar (USA)', desc:'One of the most collected American coins ever. The 1893-S is famously rare — only 100,000 minted. "The King of Morgan Dollars." Even a poor-grade specimen is worth thousands of dollars.', rarity:'legendary'},
-  {year:'1933', name:'Double Eagle (USA)', desc:'The US 1933 Double Eagle is arguably the most valuable coin in the world. Nearly all were melted down. One sold for $18.9 million in 2021. Illegal to privately own most examples.', rarity:'legendary'},
-  {year:'1947', name:'Pakistan Independence Rupee', desc:'The first coins minted for the newly independent Pakistan and India simultaneously present in 1947. Finding unminted, pre-partition transitional pieces is exceptionally rare.', rarity:'rare'},
-  {year:'1840', name:'Victoria Queen Rupee (India)', desc:'First rupee coins bearing Queen Victoria\'s portrait after East India Company coins. The "Young Head" and "Mature Head" varieties are catalogued differently. Silver content well-documented.', rarity:'uncommon'},
-];
+/* ---------- control center ---------- */
+$('#iw').innerHTML=ic('wifi',17);$('#ib').innerHTML=ic('bt',17);$('#id').innerHTML=ic('contrast',17);$('#im').innerHTML=ic('moon',17);
+$('#isun').innerHTML=ic('sun',16);$('#ivol').innerHTML=ic('vol',16);$('#isearch').innerHTML=ic('search',22,1.6);$('#sun').innerHTML=ic('sun',38,1.4);
+$('#ccBtn').onclick=e=>{e.stopPropagation();const s=$('#cc').classList.contains('show');closePanels();if(!s)$('#cc').classList.add('show')};
+$('#cc').onclick=e=>e.stopPropagation();$('#spot').onclick=e=>e.stopPropagation();
+const tog=(id,fn)=>{$(id).onclick=()=>{const on=$(id).classList.toggle('on');$(id).querySelector('span:last-child').textContent=on?'On':'Off';fn&&fn(on)}};
+tog('#tWifi',on=>$('#wifiI').style.opacity=on?1:.4);tog('#tBt');
+tog('#tDnd',on=>{if(on)toast('Focus','Notifications are paused','settings',true)});
+$('#tDark').onclick=()=>setTheme(state.theme==='dark'?'light':'dark');
+$('#wifiI').onclick=()=>$('#tWifi').click();
+const rng=(id,fn)=>{const r=$(id),u=()=>{r.style.setProperty('--v',((r.value-r.min)/(r.max-r.min)*100)+'%');fn&&fn(+r.value)};r.oninput=u;u()};
+rng('#bright',v=>$('#dimmer').style.opacity=(100-v)/110);rng('#vol');
+document.addEventListener('click',closePanels);
 
-function initCoins() { renderCoinLog(); renderCoinInfo(); }
-
-function setCoinTab(tab, btn) {
-  document.getElementById('coin-log-tab').style.display = tab==='log' ? 'block' : 'none';
-  document.getElementById('coin-add-tab').style.display = tab==='add' ? 'block' : 'none';
-  document.getElementById('coin-info-tab').style.display = tab==='info' ? 'block' : 'none';
-  document.querySelectorAll('#coin-tabs .diff-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function addCoin() {
-  const name = document.getElementById('c-name').value.trim();
-  if (!name) { alert('Enter a coin name.'); return; }
-  const coins = JSON.parse(localStorage.getItem('kronos_coins') || '[]');
-  coins.push({
-    id: Date.now(),
-    name,
-    year: document.getElementById('c-year').value,
-    country: document.getElementById('c-country').value,
-    denom: document.getElementById('c-denom').value,
-    rarity: document.getElementById('c-rarity').value,
-    notes: document.getElementById('c-notes').value,
-    added: new Date().toLocaleDateString('en-IN')
-  });
-  localStorage.setItem('kronos_coins', JSON.stringify(coins));
-  ['c-name','c-year','c-country','c-denom','c-notes'].forEach(id => document.getElementById(id).value = '');
-  renderCoinLog();
-  setCoinTab('log', document.getElementById('ct-log'));
-  updateHomeStats();
-}
-
-function deleteCoin(id) {
-  let coins = JSON.parse(localStorage.getItem('kronos_coins') || '[]');
-  coins = coins.filter(c => c.id !== id);
-  localStorage.setItem('kronos_coins', JSON.stringify(coins));
-  renderCoinLog(); updateHomeStats();
-}
-
-function renderCoinLog() {
-  const coins = JSON.parse(localStorage.getItem('kronos_coins') || '[]');
-  const list = document.getElementById('coin-list');
-  const empty = document.getElementById('coin-empty');
-  empty.style.display = coins.length ? 'none' : 'block';
-  const rarityColors = { common:'rarity-common', uncommon:'rarity-uncommon', rare:'rarity-rare', legendary:'rarity-legendary' };
-  list.innerHTML = coins.map(c => `
-    <div class="coin-entry">
-      <div class="coin-info">
-        <div class="coin-name">${c.name}</div>
-        <div class="coin-meta">${c.year ? c.year+' · ' : ''}${c.country || ''} ${c.denom ? '· '+c.denom : ''}</div>
-        ${c.notes ? `<div class="coin-meta" style="margin-top:4px;font-style:italic;">${c.notes}</div>` : ''}
-        <div class="coin-meta">${c.added}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-        <span class="coin-rarity ${rarityColors[c.rarity]||'rarity-common'}">${c.rarity.toUpperCase()}</span>
-        <button class="del-btn" onclick="deleteCoin(${c.id})">✕</button>
-      </div>
-    </div>
-  `).join('');
-  // update stats
-  const rare = coins.filter(c => c.rarity==='rare'||c.rarity==='legendary').length;
-  const countries = [...new Set(coins.map(c=>c.country).filter(Boolean))].length;
-  document.getElementById('c-total').textContent = coins.length;
-  document.getElementById('c-rare').textContent = rare;
-  document.getElementById('c-countries').textContent = countries;
-}
-
-function renderCoinInfo() {
-  const tab = document.getElementById('coin-info-tab');
-  tab.innerHTML = '<div class="label" style="margin-bottom:12px;">Notable & Rare Coins · Reference</div>' +
-    COIN_INFO.map(c => `
-      <div class="info-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div class="info-year">${c.year} — ${c.name}</div>
-          <span class="coin-rarity rarity-${c.rarity}" style="font-size:0.6rem;padding:2px 8px;">${c.rarity.toUpperCase()}</span>
-        </div>
-        <div class="info-desc">${c.desc}</div>
-      </div>
-    `).join('');
-}
-
-// ═══════════════════════════════════════════
-// REFLEX
-// ═══════════════════════════════════════════
-let reflexState = { phase:'idle', startTime:0, timer:null };
-
-function initReflex() { renderReflexScores(); }
-
-function reflexTap() {
-  const area = document.getElementById('reflex-area');
-  const msg = document.getElementById('reflex-msg');
-  if (reflexState.phase === 'idle') {
-    reflexState.phase = 'waiting';
-    area.className = 'waiting';
-    msg.textContent = 'WAIT FOR GREEN...';
-    msg.style.color = 'var(--accent2)';
-    const delay = 1500 + Math.random() * 3000;
-    reflexState.timer = setTimeout(() => {
-      area.className = 'go';
-      msg.textContent = 'TAP NOW!';
-      msg.style.color = 'var(--green)';
-      reflexState.phase = 'go';
-      reflexState.startTime = performance.now();
-    }, delay);
-  } else if (reflexState.phase === 'waiting') {
-    clearTimeout(reflexState.timer);
-    reflexState.phase = 'idle';
-    area.className = '';
-    msg.textContent = 'TOO EARLY. Tap to retry.';
-    msg.style.color = 'var(--accent2)';
-  } else if (reflexState.phase === 'go') {
-    const elapsed = Math.round(performance.now() - reflexState.startTime);
-    reflexState.phase = 'idle';
-    area.className = '';
-    msg.style.color = 'var(--accent)';
-    msg.textContent = elapsed + ' ms';
-    document.getElementById('reflex-last').textContent = elapsed;
-    const scores = JSON.parse(localStorage.getItem('kronos_reflex') || '[]');
-    scores.unshift(elapsed);
-    if (scores.length > 10) scores.pop();
-    localStorage.setItem('kronos_reflex', JSON.stringify(scores));
-    renderReflexScores();
-    updateHomeStats();
-    setTimeout(() => { if (reflexState.phase==='idle') msg.textContent = 'TAP TO START'; }, 2000);
-  }
-}
-
-function renderReflexScores() {
-  const scores = JSON.parse(localStorage.getItem('kronos_reflex') || '[]');
-  const best = scores.length ? Math.min(...scores) : null;
-  const list = document.getElementById('reflex-scores-list');
-  list.innerHTML = scores.length ? scores.map((s,i) =>
-    `<div class="rscore ${s===best?'best':''}">${i===0?'▸ ':''} ${s} ms</div>`
-  ).join('') : '<div style="font-size:0.72rem;color:var(--muted);">No scores yet.</div>';
-}
-
-// ═══════════════════════════════════════════
-// HACK TERMINAL
-// ═══════════════════════════════════════════
-const TERMINAL_COMMANDS = {
-  help:()=>termPrint([
-    {t:'info', l:'Available commands:'},
-    {t:'cmd', l:'scan        — scan the network'},
-    {t:'cmd', l:'hack [host] — attempt breach'},
-    {t:'cmd', l:'decrypt     — decrypt intercepted data'},
-    {t:'cmd', l:'trace       — trace an IP address'},
-    {t:'cmd', l:'status      — system status'},
-    {t:'cmd', l:'whoami      — identify operator'},
-    {t:'cmd', l:'clear       — clear terminal'},
-    {t:'cmd', l:'kronos      — about this system'},
-  ]),
-  whoami:()=>termSequence([
-    {t:'out',l:'Operator: KIRAN_SANKAR',d:100},
-    {t:'out',l:'Clearance: LEVEL 7 — UNRESTRICTED',d:200},
-    {t:'out',l:'Location: [CLASSIFIED]',d:300},
-    {t:'warn',l:'Identity confirmed. Welcome back.',d:500},
-  ]),
-  scan:()=>termSequence([
-    {t:'sys',l:'Initiating network scan...',d:0},
-    {t:'out',l:'[..........]  0%',d:200},
-    {t:'out',l:'[■■■.......]  30% — passive hosts detected',d:600},
-    {t:'out',l:'[■■■■■■....]  60% — 3 open ports found',d:1000},
-    {t:'out',l:'[■■■■■■■■■■] 100% — scan complete',d:1400},
-    {t:'warn',l:'Found: 192.168.1.1 [GATEWAY] | 10.0.0.47 [VULNERABLE] | kronos.local [SECURE]',d:1600},
-    {t:'info',l:'Try: hack 10.0.0.47',d:1800},
-  ]),
-  status:()=>termSequence([
-    {t:'sys',l:'Querying system...',d:0},
-    {t:'out',l:'CPU:     [■■■■■■■□□□] 68%',d:200},
-    {t:'out',l:'MEMORY:  [■■■■■□□□□□] 52%',d:350},
-    {t:'out',l:'FIREWALL: ACTIVE',d:500},
-    {t:'out',l:'ENCRYPT:  AES-256 [OK]',d:650},
-    {t:'out',l:'NETWORK:  ROUTED via 3 proxy nodes',d:800},
-    {t:'warn',l:'All systems nominal. KRONOS is running.',d:1000},
-  ]),
-  decrypt:()=>termSequence([
-    {t:'sys',l:'Loading intercepted packet...',d:0},
-    {t:'out',l:'Attempting brute force on key...',d:400},
-    {t:'out',l:'XOR cycle 1/4... failed',d:700},
-    {t:'out',l:'XOR cycle 2/4... failed',d:1000},
-    {t:'out',l:'XOR cycle 3/4... match found',d:1300},
-    {t:'warn',l:'DECRYPTED: "The archive moves at midnight. Do not be late."',d:1600},
-    {t:'err',l:'Source identity: UNKNOWN. Proceed with caution.',d:1900},
-  ]),
-  trace:()=>termSequence([
-    {t:'sys',l:'Tracing route...',d:0},
-    {t:'out',l:'HOP 1: 192.168.1.1 [LOCAL GATEWAY]',d:300},
-    {t:'out',l:'HOP 2: 103.x.x.x [ISP NODE — Kolkata]',d:600},
-    {t:'out',l:'HOP 3: 45.x.x.x [FRANKFURT RELAY]',d:900},
-    {t:'out',l:'HOP 4: 104.x.x.x [TOR EXIT NODE]',d:1200},
-    {t:'out',l:'HOP 5: ?.?.?.? [UNTRACEABLE]',d:1500},
-    {t:'err',l:'Trace terminated. Target has routed through darknet relay. Cannot resolve.',d:1800},
-  ]),
-  kronos:()=>termSequence([
-    {t:'warn',l:'KRONOS v1.0',d:0},
-    {t:'out',l:'A personal universe. Built by KS Tech.',d:200},
-    {t:'out',l:'8 modules. Fully offline. No tracking.',d:400},
-    {t:'out',l:'"Time is the only currency that cannot be earned back."',d:700},
-  ]),
-  clear:()=>{ document.getElementById('terminal').innerHTML=''; return; }
-};
-
-let termLocked = false;
-
-function initTerminal() {
-  termSequence([
-    {t:'sys',l:'KRONOS TERMINAL v1.0',d:0},
-    {t:'sys',l:'Secure session initiated.',d:200},
-    {t:'info',l:'Type "help" for available commands.',d:400},
-  ]);
-  document.getElementById('terminal-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const val = e.target.value.trim().toLowerCase();
-      e.target.value = '';
-      if (!val) return;
-      termPrint([{t:'cmd',l:'$ '+val}]);
-      if (termLocked) { termPrint([{t:'err',l:'Command locked — process running.'}]); return; }
-      const base = val.split(' ')[0];
-      if (TERMINAL_COMMANDS[base]) TERMINAL_COMMANDS[base](val);
-      else termPrint([{t:'err',l:'Command not found: '+val+'. Type "help".'}]);
-    }
-  });
-}
-
-function termPrint(lines) {
-  const t = document.getElementById('terminal');
-  lines.forEach(l => {
-    const div = document.createElement('div');
-    div.className = 't-line t-'+l.t;
-    div.textContent = l.l;
-    t.appendChild(div);
-  });
-  t.scrollTop = t.scrollHeight;
-}
-
-function termSequence(lines) {
-  termLocked = true;
-  lines.forEach(l => {
-    setTimeout(() => {
-      termPrint([l]);
-      if (lines.indexOf(l) === lines.length-1) termLocked = false;
-    }, l.d);
-  });
-}
-
-// ═══════════════════════════════════════════
-// NOTES
-// ═══════════════════════════════════════════
-let currentNoteId = null;
-
-function initNotes() { renderNotes(); }
-
-function renderNotes() {
-  const notes = JSON.parse(localStorage.getItem('kronos_notes') || '[]');
-  const list = document.getElementById('notes-list');
-  const empty = document.getElementById('notes-empty');
-  if (!notes.length) { list.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none';
-  list.innerHTML = notes.map(n => `
-    <div class="note-item" onclick="openNote(${n.id})">
-      <div class="note-title">${n.title || 'Untitled'}</div>
-      <div class="note-preview">${n.body || ''}</div>
-      <div class="note-date">${n.date}</div>
-    </div>
-  `).join('');
-}
-
-function newNote() {
-  currentNoteId = null;
-  document.getElementById('note-title-input').value = '';
-  document.getElementById('note-body-input').value = '';
-  document.getElementById('note-list-view').classList.add('hidden');
-  document.getElementById('note-editor').classList.add('show');
-}
-
-function openNote(id) {
-  const notes = JSON.parse(localStorage.getItem('kronos_notes') || '[]');
-  const n = notes.find(x => x.id === id);
-  if (!n) return;
-  currentNoteId = id;
-  document.getElementById('note-title-input').value = n.title;
-  document.getElementById('note-body-input').value = n.body;
-  document.getElementById('note-list-view').classList.add('hidden');
-  document.getElementById('note-editor').classList.add('show');
-}
-
-function saveNote() {
-  const title = document.getElementById('note-title-input').value.trim();
-  const body = document.getElementById('note-body-input').value.trim();
-  let notes = JSON.parse(localStorage.getItem('kronos_notes') || '[]');
-  if (currentNoteId) {
-    notes = notes.map(n => n.id===currentNoteId ? {...n, title, body, date:new Date().toLocaleDateString('en-IN')} : n);
-  } else {
-    notes.unshift({ id:Date.now(), title, body, date:new Date().toLocaleDateString('en-IN') });
-  }
-  localStorage.setItem('kronos_notes', JSON.stringify(notes));
-  closeNoteEditor();
-}
-
-function deleteNote() {
-  if (!currentNoteId) { closeNoteEditor(); return; }
-  if (!confirm('Delete this note?')) return;
-  let notes = JSON.parse(localStorage.getItem('kronos_notes') || '[]');
-  notes = notes.filter(n => n.id !== currentNoteId);
-  localStorage.setItem('kronos_notes', JSON.stringify(notes));
-  closeNoteEditor();
-}
-
-function closeNoteEditor() {
-  document.getElementById('note-list-view').classList.remove('hidden');
-  document.getElementById('note-editor').classList.remove('show');
-  renderNotes();
-}
+/* ---------- toast / lock / clock ---------- */
+function toast(t,m,app,force){if($('#tDnd').classList.contains('on')&&!force)return;const a=APPS[app]||APPS.settings;
+ const d=document.createElement('div');d.className='toast blur';d.innerHTML=`<span class="mini" style="background:${a.c};width:34px;height:34px;border-radius:9px">${ic(a.i,18)}</span><div><b>${t}</b><span>${m}</span></div>`;
+ $('#toasts').appendChild(d);setTimeout(()=>d.remove(),3400)}
+function lock(){closePanels();$('#lock').classList.remove('gone')}
+function unlock(){if($('#lock').classList.contains('gone'))return;$('#lock').classList.add('gone');setTimeout(()=>toast('Welcome','Press Ctrl + Space to search','settings'),600)}
+$('#lock').onclick=unlock;
+document.addEventListener('keydown',e=>{
+ if(e.key==='Enter')unlock();
+ if((e.ctrlKey||e.metaKey)&&e.code==='Space'){e.preventDefault();spot(!$('#spot').classList.contains('show'))}
+ if(e.key==='Escape')closePanels();
+});
+function clock(){const d=new Date(),t=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+ $('#clk').textContent=d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+'  '+t;
+ $('#lockt').textContent=t.replace(/\s?[AP]M/i,'');$('#lockd').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})}
+function calendar(){const d=new Date(),y=d.getFullYear(),m=d.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();
+ let h=`<h5>${d.toLocaleDateString([],{month:'long',year:'numeric'})}</h5><div class="gr">`+'SMTWTFS'.split('').map(x=>`<span class="h">${x}</span>`).join('');
+ for(let i=0;i<first;i++)h+='<span></span>';for(let i=1;i<=days;i++)h+=`<span class="${i===d.getDate()?'t':''}">${i}</span>`;$('#cal').innerHTML=h+'</div>'}
+clock();setInterval(clock,15000);calendar();setAccent(0);
 </script>
 </body>
 </html>
